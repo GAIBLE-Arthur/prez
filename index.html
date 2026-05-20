@@ -223,20 +223,300 @@ section { border-bottom: 1px solid var(--rule); }
 .fund-desc strong { display: block; font-weight: 500; color: var(--ink); font-size: .85rem; margin-bottom: .15rem; }
 .fund-pct { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; color: var(--ink); white-space: nowrap; }
 
-/* ── ROADMAP ── */
-.roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-.phase { background: var(--white); padding: 2rem 1.75rem; }
-.phase-n {
-  font-size: .65rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--ink3); margin-bottom: 1rem;
+
+/* ── ROADMAP TIMELINE (branched, interactive) ── */
+.roadmap-timeline { position: relative; padding: 3rem 0 0; }
+.rdm-outer {
+  position: relative;
+  max-width: 1120px; margin: 0 auto;
+  padding: 0 3rem;
 }
-.phase-title { font-size: .92rem; font-weight: 500; color: var(--ink); margin-bottom: .6rem; }
-.phase-body { font-size: .78rem; font-weight: 300; color: var(--ink2); line-height: 1.65; }
-.phase-bar { width: 24px; height: 2px; background: var(--accent); margin-bottom: 1.25rem; }
-.phase.active { background: var(--ink); }
-.phase.active .phase-n, .phase.active .phase-body { color: rgba(255,255,255,.45); }
-.phase.active .phase-title { color: #fff; }
-.phase.active .phase-bar { background: #fff; }
+.rdm-spine {
+  position: absolute;
+  left: calc(3rem + 12.5%);
+  right: calc(3rem + 12.5%);
+  top: 196px;
+  height: 2px;
+  background: var(--rule);
+  z-index: 1;
+}
+.rdm-spine-fill {
+  height: 100%; width: 0%;
+  background: var(--accent);
+  transition: width 1.6s cubic-bezier(.4,0,.2,1);
+}
+.rdm-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  position: relative; z-index: 2;
+}
+.rdm-col { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.rdm-top { height: 148px; width: 100%; display: flex; align-items: flex-end; justify-content: center; padding: 0 .75rem; }
+.rdm-bot { height: 148px; width: 100%; display: flex; align-items: flex-start; justify-content: center; padding: 0 .75rem; }
+.rdm-branch {
+  width: 2px; background: var(--rule);
+  transition: background .4s ease;
+  flex-shrink: 0;
+}
+.rdm-branch-top { height: 44px; }
+.rdm-branch-bot { height: 44px; }
+.rdm-col.rdm-active .rdm-branch,
+.rdm-col.rdm-done .rdm-branch { background: var(--accent); }
+.rdm-node {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--rule);
+  background: var(--bg);
+  flex-shrink: 0; position: relative; z-index: 3;
+  transition: border-color .3s, background .3s, transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+}
+.rdm-col.rdm-done .rdm-node { border-color: var(--accent); background: var(--accent); }
+.rdm-col.rdm-active .rdm-node {
+  border-color: var(--accent); background: var(--white);
+  transform: scale(1.8);
+  box-shadow: 0 0 0 5px rgba(26,26,255,.14), 0 0 0 11px rgba(26,26,255,.05);
+}
+.rdm-col:hover .rdm-node { transform: scale(1.5); border-color: var(--accent); }
+.rdm-col.rdm-active:hover .rdm-node { transform: scale(2); }
+.rdm-card {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1.4rem 1.5rem;
+  width: 100%;
+  transition: border-color .25s, box-shadow .25s, background .25s, transform .3s cubic-bezier(.34,1.2,.64,1);
+  cursor: pointer;
+}
+.rdm-card:hover { border-color: rgba(26,26,255,.3); box-shadow: 0 6px 24px rgba(26,26,255,.07); transform: translateY(-3px); }
+.rdm-col.rdm-active .rdm-card { border-color: var(--accent); background: #f8f8ff; box-shadow: 0 4px 20px rgba(26,26,255,.08); }
+.rdm-phase-tag {
+  display: block;
+  font-size: .6rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: .5rem; transition: color .25s;
+}
+.rdm-col.rdm-done .rdm-phase-tag,
+.rdm-col.rdm-active .rdm-phase-tag { color: var(--accent); }
+.rdm-phase-title { font-size: .88rem; font-weight: 500; color: var(--ink); margin-bottom: .35rem; line-height: 1.3; }
+.rdm-phase-body { font-size: .75rem; font-weight: 300; color: var(--ink2); line-height: 1.6; }
+.rdm-year {
+  font-size: .6rem; font-weight: 600; letter-spacing: .12em;
+  color: var(--ink3); margin-top: .35rem; text-align: center; transition: color .3s;
+}
+.rdm-col.rdm-active .rdm-year, .rdm-col.rdm-done .rdm-year { color: var(--accent); }
+
+/* Detail panel */
+.rdm-detail {
+  max-width: 1120px; margin: 0 auto;
+  padding: 0 3rem 4rem;
+  overflow: hidden;
+}
+.rdm-detail-inner {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--white);
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.rdm-detail-inner.visible { opacity: 1; transform: translateY(0); }
+.rdm-detail-left {
+  background: var(--ink);
+  padding: 2.5rem 2rem;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.rdm-detail-num {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 5rem; font-weight: 400; line-height: 1;
+  color: rgba(255,255,255,.08); letter-spacing: -.03em;
+  margin-bottom: 1rem;
+}
+.rdm-detail-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.6rem; font-weight: 400; color: #fff; line-height: 1.15;
+  margin-bottom: .75rem;
+}
+.rdm-detail-title em { font-style: italic; color: #8080ff; }
+.rdm-detail-tag {
+  display: inline-block;
+  font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.5);
+  padding: .3rem .8rem; border-radius: 2px;
+}
+.rdm-detail-right { padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.rdm-detail-desc {
+  font-size: .92rem; font-weight: 300; color: var(--ink2); line-height: 1.85;
+  max-width: 56ch;
+}
+.rdm-detail-items { display: flex; flex-direction: column; gap: 0; }
+.rdm-detail-item {
+  display: flex; align-items: flex-start; gap: .875rem;
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.rdm-detail-item:last-child { border-bottom: none; }
+.rdm-detail-item-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0; margin-top: .45rem;
+}
+.rdm-detail-item-text { font-size: .82rem; font-weight: 300; color: var(--ink2); line-height: 1.6; }
+.rdm-detail-item-text strong { font-weight: 500; color: var(--ink); }
+.rdm-detail-year-badge {
+  align-self: flex-start;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1rem; color: var(--accent);
+  border: 1px solid rgba(26,26,255,.2);
+  padding: .3rem .9rem; border-radius: 2px;
+  background: rgba(26,26,255,.03);
+}
+
+@media (max-width: 860px) {
+  .rdm-grid { grid-template-columns: 1fr 1fr; }
+  .rdm-spine { display: none; }
+  .rdm-outer, .rdm-detail { padding: 0 1.5rem 3rem; }
+  .rdm-detail-inner { grid-template-columns: 1fr; }
+}
+
+/* ── RICH SCROLL & HOVER EFFECTS ── */
+
+/* Nav active indicator */
+nav { transition: box-shadow .3s; }
+nav.scrolled { box-shadow: 0 1px 0 var(--rule), 0 4px 24px rgba(0,0,0,.04); }
+
+/* Hero parallax */
+.hero-left { will-change: transform; }
+
+/* Section stagger reveal — base */
+[data-sr] {
+  opacity: 0;
+  transition: opacity .65s ease, transform .65s ease;
+}
+[data-sr="up"] { transform: translateY(24px); }
+[data-sr="left"] { transform: translateX(-24px); }
+[data-sr="right"] { transform: translateX(24px); }
+[data-sr="scale"] { transform: scale(.96); }
+[data-sr].sr-visible { opacity: 1; transform: none; }
+
+/* Mission items lift */
+.mission-item {
+  transition: background .2s, padding-left .2s;
+}
+.mission-item:hover {
+  background: rgba(26,26,255,.02);
+  padding-left: .5rem;
+}
+
+/* Cert tiers tilt */
+.cert-tier {
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .25s;
+}
+.cert-tier:hover {
+  transform: translateY(-4px);
+  border-color: rgba(26,26,255,.25) !important;
+  box-shadow: 0 8px 28px rgba(26,26,255,.07);
+  z-index: 2;
+}
+
+/* Program cards */
+.program {
+  transition: background .2s;
+  position: relative; overflow: hidden;
+}
+.program::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(26,26,255,.025);
+  opacity: 0; transition: opacity .2s;
+  pointer-events: none;
+}
+.program:hover::after { opacity: 1; }
+
+/* Fund rows */
+.fund-row {
+  transition: background .2s, transform .2s;
+}
+.fund-row:hover {
+  background: rgba(26,26,255,.025);
+  transform: translateX(4px);
+}
+
+/* Cert badge */
+.cert-badge {
+  transition: background .2s;
+}
+.cert-badge:hover { background: rgba(26,26,255,.02); }
+
+/* Hero stats */
+.hero-stat {
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .2s;
+}
+.hero-stat:hover {
+  transform: translateX(4px);
+  border-color: rgba(26,26,255,.3);
+  box-shadow: 4px 0 0 0 var(--accent);
+}
+
+/* Progress bar on scroll */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 2px;
+  background: var(--accent); z-index: 200;
+  width: 0%; transition: width .05s linear;
+  pointer-events: none;
+}
+
+/* Section number counter animation */
+.section-label { position: relative; }
+
+/* Magnetic links */
+.nav-cta, .btn-primary, .btn-white {
+  transition: opacity .15s, transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-cta:hover, .btn-primary:hover, .btn-white:hover {
+  opacity: .85;
+  transform: scale(1.03);
+}
+
+/* Donut chart hover shimmer */
+.donut-wrap {
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.donut-wrap:hover { transform: scale(1.03) rotate(-1deg); }
+
+/* CTA band */
+.cta-band { position: relative; overflow: hidden; }
+.cta-band::before {
+  content: '';
+  position: absolute; top: -50%; left: -20%;
+  width: 60%; height: 200%;
+  background: rgba(26,26,255,.04);
+  transform: skewX(-15deg) translateX(-100%);
+  transition: transform .6s ease;
+  pointer-events: none;
+}
+.cta-band:hover::before { transform: skewX(-15deg) translateX(280%); }
+
+/* Wheel section */
+.wheel-section { position: relative; overflow: hidden; }
+.wheel-section::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(26,26,255,.4), transparent);
+}
+.wheel-section::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(26,26,255,.4), transparent);
+}
+
+/* Scroll reveal stagger delays */
+[data-sr-delay="1"] { transition-delay: .08s; }
+[data-sr-delay="2"] { transition-delay: .16s; }
+[data-sr-delay="3"] { transition-delay: .24s; }
+[data-sr-delay="4"] { transition-delay: .32s; }
+
 
 /* ── CTA ── */
 .cta-band {
@@ -336,6 +616,7 @@ footer a:hover { color: var(--ink); }
 </style>
 </head>
 <body>
+<div id="progress-bar"></div>
 
 <nav>
   <span class="nav-brand">SERVE <em>by Babolat</em></span>
@@ -355,7 +636,7 @@ footer a:hover { color: var(--ink); }
   <div class="hero-left">
     <p class="hero-eyebrow">Entreprise à mission</p>
     <h1>Le sport,<br><em>vecteur</em> de<br>transformation.</h1>
-    <p class="hero-body">SERVE by Babolat est un programme d'entreprise à mission conçu pour démocratiser l'accès au sport, certifier les acteurs de l'écosystème et préparer les infrastructures sportives mondiales aux exigences ESG de 2035.</p>
+    <p class="hero-body">SERVE by Babolat est un programme d'entreprise à mission conçu pour démocratiser l'accès au sport, certifier les acteurs de l'écosystème et préparer les infrastructures sportives mondiales aux exigences ESG de 2050.</p>
     <div class="hero-actions">
       <a href="#mission" class="btn-primary">Découvrir la mission</a>
       <a href="#financement" class="btn-ghost">
@@ -367,7 +648,7 @@ footer a:hover { color: var(--ink); }
   <div class="hero-right">
     <div class="hero-stat-stack" data-reveal>
       <div class="hero-stat">
-        <div class="stat-n">2035<em>—</em></div>
+        <div class="stat-n">2050<em>—</em></div>
         <div class="stat-label">Horizon zéro émission fixé par l'Union Européenne</div>
       </div>
       <div class="hero-stat">
@@ -396,7 +677,7 @@ footer a:hover { color: var(--ink); }
         <div class="mission-body" data-reveal>
           <p>L'accès au sport reste un privilège. Les infrastructures sportives mondiales accusent un retard structurel face aux exigences écologiques croissantes. Les talents issus de milieux défavorisés restent invisibles.</p>
           <p>SERVE n'est pas une initiative de communication. C'est un levier stratégique : en s'appuyant sur la légitimité et la distribution mondiale de Babolat, SERVE crée un écosystème capable de répondre simultanément aux enjeux d'équité sociale et de conformité environnementale.</p>
-          <blockquote class="mission-quote">« Anticiper les régulations ESG de 2035 en transformant le sport dès aujourd'hui. »</blockquote>
+          <blockquote class="mission-quote">« Anticiper les régulations ESG de 2050 en transformant le sport dès aujourd'hui. »</blockquote>
         </div>
       </div>
       <div class="mission-right" data-reveal>
@@ -410,7 +691,7 @@ footer a:hover { color: var(--ink); }
         </div>
         <div class="mission-item">
           <span class="item-n">03</span>
-          <div><p class="item-title">Transition écologique</p><p class="item-body">Accompagner les infrastructures sportives dans leur transformation énergétique pour atteindre la neutralité carbone à l'horizon 2035.</p></div>
+          <div><p class="item-title">Transition écologique</p><p class="item-body">Accompagner les infrastructures sportives dans leur transformation énergétique pour atteindre la neutralité carbone à l'horizon 2050.</p></div>
         </div>
         <div class="mission-item">
           <span class="item-n">04</span>
@@ -435,12 +716,12 @@ footer a:hover { color: var(--ink); }
       <div class="wheel-panel">
         <p class="wheel-panel-eyebrow" id="wpEye">Sélectionnez un segment</p>
         <h3 class="wheel-panel-title" id="wpTitle">Six dimensions,<br><em>une mission.</em></h3>
-        <p class="wheel-panel-body" id="wpBody">SERVE by Babolat structure son action autour de six programmes complémentaires. Chaque segment de la roue représente un levier stratégique — social, écologique, institutionnel ou financier — qui contribue à l'objectif zéro émission 2035.</p>
+        <p class="wheel-panel-body" id="wpBody">SERVE by Babolat structure son action autour de six programmes complémentaires. Chaque segment de la roue représente un levier stratégique — social, écologique, institutionnel ou financier — qui contribue à l'objectif zéro émission 2050.</p>
         <div class="wheel-panel-tags" id="wpTags">
           <span class="wheel-tag">ESG</span>
           <span class="wheel-tag">Sport</span>
           <span class="wheel-tag">Impact</span>
-          <span class="wheel-tag">2035</span>
+          <span class="wheel-tag">2050</span>
         </div>
       </div>
     </div>
@@ -477,7 +758,7 @@ footer a:hover { color: var(--ink); }
         <ul class="program-list">
           <li>Programme de certification payant pour les coachs axé sur l'éthique et la prévention</li>
           <li>Labellisation standardisée des clubs selon une notation 1 à 3 étoiles (SERVE Stars)</li>
-          <li>Intégration au réseau SERVE d'organisations à fort impact positif et décisionnel</li>
+          <li>Certification des produits des entreprises labellisées</li>
           <li>Conformité anticipée aux futures normes ESG de l'Union Européenne</li>
         </ul>
         <div class="program-kpi">
@@ -582,33 +863,102 @@ footer a:hover { color: var(--ink); }
 <section id="roadmap">
   <div class="container">
     <p class="section-label" data-n="05">Roadmap</p>
-    <h2 class="section-heading" data-reveal>Quatre phases,<br>une <em>trajectoire</em>.</h2>
-    <p class="section-intro" data-reveal>De la preuve de concept au lobbying réglementaire, chaque phase construit les fondations de la suivante.</p>
-    <div style="height: 2.5rem;"></div>
-    <div class="roadmap" data-reveal>
-      <div class="phase active">
-        <div class="phase-bar"></div>
-        <p class="phase-n">Phase 01 — En cours</p>
-        <p class="phase-title">Preuve de Concept</p>
-        <p class="phase-body">Déploiement initial financé par Babolat. Mise en place des commissions indépendantes et premiers audits de clubs pilotes.</p>
+    <h2 class="section-heading" data-sr="up">Quatre phases,<br>une <em>trajectoire</em>.</h2>
+    <p class="section-intro" data-sr="up" data-sr-delay="1">De la preuve de concept au lobbying réglementaire, chaque phase construit les fondations de la suivante. Cliquez sur une phase pour explorer son contenu.</p>
+  </div>
+
+  <div class="roadmap-timeline" id="rdmTimeline">
+    <div class="rdm-outer">
+      <div class="rdm-spine"><div class="rdm-spine-fill" id="rdmFill"></div></div>
+      <div class="rdm-grid" id="rdmGrid">
+
+        <!-- Phase 1 — TOP -->
+        <div class="rdm-col rdm-active" id="rdm1">
+          <div class="rdm-top">
+            <div class="rdm-card" id="rdmC1" data-dir="up">
+              <span class="rdm-phase-tag">Phase 01 — En cours</span>
+              <p class="rdm-phase-title">Preuve de Concept</p>
+              <p class="rdm-phase-body">Déploiement initial financé par Babolat et premiers audits pilotes.</p>
+            </div>
+          </div>
+          <div class="rdm-branch rdm-branch-top"></div>
+          <div class="rdm-node" id="rdmN1"></div>
+          <div class="rdm-year">2024</div>
+          <div class="rdm-branch rdm-branch-bot" style="visibility:hidden;"></div>
+          <div class="rdm-bot" style="visibility:hidden;"></div>
+        </div>
+
+        <!-- Phase 2 — BOTTOM -->
+        <div class="rdm-col" id="rdm2">
+          <div class="rdm-top" style="visibility:hidden;"></div>
+          <div class="rdm-branch rdm-branch-top" style="visibility:hidden;"></div>
+          <div class="rdm-node" id="rdmN2"></div>
+          <div class="rdm-year">2025</div>
+          <div class="rdm-branch rdm-branch-bot"></div>
+          <div class="rdm-bot">
+            <div class="rdm-card" id="rdmC2" data-dir="down">
+              <span class="rdm-phase-tag">Phase 02 — Court terme</span>
+              <p class="rdm-phase-title">Monétisation</p>
+              <p class="rdm-phase-body">Coachs certifiés, royalties 1% CA et hub digital lancé.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 3 — TOP -->
+        <div class="rdm-col" id="rdm3">
+          <div class="rdm-top">
+            <div class="rdm-card" id="rdmC3" data-dir="up">
+              <span class="rdm-phase-tag">Phase 03 — Moyen terme</span>
+              <p class="rdm-phase-title">Captation publique</p>
+              <p class="rdm-phase-body">Lobbying Bruxelles & Paris, subventions publiques sécurisées.</p>
+            </div>
+          </div>
+          <div class="rdm-branch rdm-branch-top"></div>
+          <div class="rdm-node" id="rdmN3"></div>
+          <div class="rdm-year">2027</div>
+          <div class="rdm-branch rdm-branch-bot" style="visibility:hidden;"></div>
+          <div class="rdm-bot" style="visibility:hidden;"></div>
+        </div>
+
+        <!-- Phase 4 — BOTTOM -->
+        <div class="rdm-col" id="rdm4">
+          <div class="rdm-top" style="visibility:hidden;"></div>
+          <div class="rdm-branch rdm-branch-top" style="visibility:hidden;"></div>
+          <div class="rdm-node" id="rdmN4"></div>
+          <div class="rdm-year">2050</div>
+          <div class="rdm-branch rdm-branch-bot"></div>
+          <div class="rdm-bot">
+            <div class="rdm-card" id="rdmC4" data-dir="down">
+              <span class="rdm-phase-tag">Phase 04 — Long terme</span>
+              <p class="rdm-phase-title">Régulation ESG</p>
+              <p class="rdm-phase-body">ESG obligatoire dans le sport. Horizon zéro émission 2050.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div class="phase">
-        <div class="phase-bar"></div>
-        <p class="phase-n">Phase 02 — Court terme</p>
-        <p class="phase-title">Monétisation</p>
-        <p class="phase-body">Intégration payante des coachs certifiés. Royalties des premières entreprises labellisées (1% CA). Hub digital en ligne.</p>
-      </div>
-      <div class="phase">
-        <div class="phase-bar"></div>
-        <p class="phase-n">Phase 03 — Moyen terme</p>
-        <p class="phase-title">Captation publique</p>
-        <p class="phase-body">Lobbying actif à Bruxelles et Paris pour sécuriser des flux de subventions publiques réguliers et pérennes.</p>
-      </div>
-      <div class="phase">
-        <div class="phase-bar"></div>
-        <p class="phase-n">Phase 04 — Long terme</p>
-        <p class="phase-title">Régulation ESG</p>
-        <p class="phase-body">Lobbying institutionnel pour rendre l'investissement ESG obligatoire dans le sport. Horizon zéro émission 2035.</p>
+    </div>
+
+    <!-- Detail panel -->
+    <div class="rdm-detail">
+      <div class="rdm-detail-inner" id="rdmDetail">
+        <div class="rdm-detail-left">
+          <div class="rdm-detail-num" id="rdmDetailNum">01</div>
+          <div>
+            <p class="rdm-detail-title" id="rdmDetailTitle">Preuve de<br><em>Concept</em></p>
+            <span class="rdm-detail-tag" id="rdmDetailTag">En cours</span>
+          </div>
+        </div>
+        <div class="rdm-detail-right">
+          <p class="rdm-detail-desc" id="rdmDetailDesc">Babolat finance le déploiement initial du programme SERVE. Les premières commissions indépendantes sont constituées, les clubs pilotes sélectionnés et les premiers audits conduits pour valider le modèle avant mise à l'échelle.</p>
+          <div class="rdm-detail-items" id="rdmDetailItems">
+            <div class="rdm-detail-item"><div class="rdm-detail-item-dot"></div><div class="rdm-detail-item-text"><strong>Financement Babolat</strong> — Capital d'amorçage injecté par Babolat pour couvrir les opérations initiales sans charge externe.</div></div>
+            <div class="rdm-detail-item"><div class="rdm-detail-item-dot"></div><div class="rdm-detail-item-text"><strong>Commission indépendante</strong> — Mise en place du jury d'experts chargé d'auditer les dossiers de clubs et de candidats.</div></div>
+            <div class="rdm-detail-item"><div class="rdm-detail-item-dot"></div><div class="rdm-detail-item-text"><strong>Clubs pilotes</strong> — Sélection de 5 à 10 clubs pionniers pour valider les processus de certification SERVE Stars.</div></div>
+            <div class="rdm-detail-item"><div class="rdm-detail-item-dot"></div><div class="rdm-detail-item-text"><strong>Hub digital v1</strong> — Lancement de la plateforme de coaching en version bêta, accessible gratuitement aux premiers utilisateurs.</div></div>
+          </div>
+          <span class="rdm-detail-year-badge" id="rdmDetailYear">Horizon 2035</span>
+        </div>
       </div>
     </div>
   </div>
@@ -659,305 +1009,354 @@ document.querySelectorAll('[data-reveal]').forEach(el => obs.observe(el));
 </script>
 
 <script>
+/* MASTER EFFECTS ENGINE */
 (function(){
-  const SEGS = [
+const bar = document.getElementById('progress-bar');
+function updateBar(){ const h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = (h > 0 ? (window.scrollY/h)*100 : 0) + '%'; }
+window.addEventListener('scroll', updateBar, {passive:true});
+const nav = document.querySelector('nav');
+window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 20); }, {passive:true});
+const srObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('sr-visible'); srObs.unobserve(e.target); }});
+}, {threshold:0.12});
+document.querySelectorAll('[data-sr]').forEach(el => srObs.observe(el));
+const heroLeft = document.querySelector('.hero-left');
+if(heroLeft){
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if(y < window.innerHeight){ heroLeft.style.transform = `translateY(${y*0.1}px)`; heroLeft.style.opacity = String(Math.max(0, 1-(y/window.innerHeight)*0.55)); }
+  }, {passive:true});
+}
+document.querySelectorAll('.nav-cta, .btn-primary, .btn-white').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect();
+    btn.style.transform = `translate(${(e.clientX-r.left-r.width/2)*0.22}px,${(e.clientY-r.top-r.height/2)*0.22}px) scale(1.03)`;
+  });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+});
+const labelObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='none'; labelObs.unobserve(e.target); }});
+}, {threshold:0.3});
+document.querySelectorAll('.section-label').forEach(el => {
+  el.style.opacity='0'; el.style.transform='translateY(8px)'; el.style.transition='opacity .5s ease, transform .5s ease';
+  labelObs.observe(el);
+});
+const missionObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    e.target.querySelectorAll('.mission-item').forEach((item,i) => {
+      item.style.cssText += `opacity:0;transform:translateX(-14px);transition:opacity .45s ease ${i*.1}s,transform .45s ease ${i*.1}s,background .2s,padding-left .2s`;
+      requestAnimationFrame(() => { item.style.opacity='1'; item.style.transform='translateX(0)'; });
+    });
+    missionObs.unobserve(e.target);
+  });
+},{threshold:0.15});
+const mr = document.querySelector('.mission-right');
+if(mr) missionObs.observe(mr);
+const certObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    e.target.querySelectorAll('.cert-tier,.cert-badge').forEach((el,i) => {
+      el.style.cssText += `opacity:0;transform:translateY(16px);transition:opacity .45s ease ${i*.12}s,transform .45s ease ${i*.12}s`;
+      requestAnimationFrame(() => { el.style.opacity='1'; el.style.transform='translateY(0)'; });
+    });
+    certObs.unobserve(e.target);
+  });
+},{threshold:0.15});
+document.querySelectorAll('.cert-matrix,.cert-trio').forEach(el => certObs.observe(el));
+const fundObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    e.target.querySelectorAll('.fund-row').forEach((row,i) => {
+      row.style.cssText += `opacity:0;transform:translateX(16px);transition:opacity .4s ease ${i*.1}s,transform .4s ease ${i*.1}s,background .2s`;
+      requestAnimationFrame(() => { row.style.opacity='1'; row.style.transform='translateX(0)'; });
+    });
+    fundObs.unobserve(e.target);
+  });
+},{threshold:0.2});
+const fl = document.querySelector('.funding-legend');
+if(fl) fundObs.observe(fl);
+const progObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    e.target.querySelectorAll('.program').forEach((p,i) => {
+      p.style.cssText += `opacity:0;transform:translateY(20px);transition:opacity .5s ease ${i*.15}s,transform .5s ease ${i*.15}s`;
+      requestAnimationFrame(() => { p.style.opacity='1'; p.style.transform='translateY(0)'; });
+    });
+    progObs.unobserve(e.target);
+  });
+},{threshold:0.15});
+const pg = document.querySelector('.programs-grid');
+if(pg) progObs.observe(pg);
+const statObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    e.target.querySelectorAll('.hero-stat').forEach((s,i) => {
+      s.style.cssText += `opacity:0;transform:translateX(18px);transition:opacity .45s ease ${i*.1}s,transform .45s cubic-bezier(.34,1.2,.64,1) ${i*.1}s,border-color .2s,box-shadow .2s`;
+      requestAnimationFrame(() => { s.style.opacity='1'; s.style.transform='translateX(0)'; });
+    });
+    statObs.unobserve(e.target);
+  });
+},{threshold:0.2});
+const hs = document.querySelector('.hero-stat-stack');
+if(hs) statObs.observe(hs);
+})();
+
+/* ROADMAP ENGINE */
+(function(){
+  const PHASES = [
     {
-      id: 'people',
-      label: 'SERVE People',
-      short: 'Inclusion',
-      eye: '01 — SERVE People',
-      title: 'Le sport,\naccessible\nà tous.',
-      titleHtml: 'Le sport,<br><em>accessible</em><br>à tous.',
-      body: 'Jeunes talents, publics défavorisés, personnes en situation de handicap. SERVE People garantit l\'accès à des revenus décents, un tutorat structuré et une plateforme digitale de coaching — le tout audité par une commission indépendante.',
-      tags: ['Inclusion', 'Tutorat', 'Revenus décents', 'Commission indép.'],
-      color: '#1a1aff',
-      dark: '#0d0d99'
+      num:'01', title:'Preuve de<br><em>Concept</em>', tag:'En cours', year:'Horizon 2035',
+      desc:'Babolat finance le déploiement initial du programme SERVE. Les premières commissions indépendantes sont constituées, les clubs pilotes sélectionnés et les premiers audits conduits pour valider le modèle avant mise à l\'échelle.',
+      items:[
+        {title:'Financement Babolat',body:'Capital d\'amorçage injecté par Babolat pour couvrir les opérations initiales sans charge externe.'},
+        {title:'Commission indépendante',body:'Mise en place du jury d\'experts chargé d\'auditer les dossiers de clubs et de candidats SERVE.'},
+        {title:'Clubs pilotes',body:'Sélection de 5 à 10 clubs pionniers pour valider les processus de certification SERVE Stars.'},
+        {title:'Hub digital v1',body:'Lancement de la plateforme de coaching en version bêta, accessible gratuitement aux premiers utilisateurs.'},
+      ]
     },
     {
-      id: 'digital',
-      label: 'Hub Digital',
-      short: 'Plateforme',
-      eye: '02 — Hub Digital',
-      title: 'Le coaching\npro,\ndémocratisé.',
-      titleHtml: 'Le coaching<br><em>pro,</em><br>démocratisé.',
-      body: 'Une plateforme d\'apprentissage technique à large échelle. Formations certifiantes, conseils de professionnels, accès gratuit et illimité — pour briser les barrières financières d\'accès au sport de haut niveau.',
-      tags: ['Formation', 'Gratuit', 'Digital', 'Certifiant'],
-      color: '#0066cc',
-      dark: '#003d80'
+      num:'02', title:'Monétisation<br><em>& Royalties</em>', tag:'Court terme', year:'Horizon 2025',
+      desc:'Le modèle économique est activé : les coachs accèdent à la certification payante SERVE, les premières entreprises labellisées reversent 1% de leur chiffre d\'affaires produit au fonds, et le hub digital est ouvert au grand public.',
+      items:[
+        {title:'Certification coachs payante',body:'Les formations éthique, prévention et coaching responsable sont commercialisées. Revenus récurrents de certification.'},
+        {title:'Royalties 1% CA',body:'Premières entreprises partenaires engagées contractuellement à reverser 1% de leur CA produit labellisé SERVE.'},
+        {title:'Hub digital public',body:'Ouverture de la plateforme au grand public. Accès gratuit pour les usagers, monétisation via les certifications pro.'},
+        {title:'Fonds hybride constitué',body:'Le fonds SERVE atteint sa masse critique initiale, permettant de financer les premiers bénéficiaires SERVE People.'},
+      ]
     },
     {
-      id: 'stars',
-      label: 'SERVE Stars',
-      short: 'Certification clubs',
-      eye: '03 — SERVE Stars',
-      title: 'L\'étoile\nqui fait la\ndifférence.',
-      titleHtml: 'L\'étoile<br>qui fait la<br><em>différence.</em>',
-      body: 'Système d\'audit institutionnel de type Guide Michelin — 1 à 3 étoiles — évaluant la gouvernance éthique et la maturité écologique des clubs. Un signal de confiance public, rigoureux et indépendant.',
-      tags: ['1-3 étoiles', 'Audit', 'Gouvernance', 'Michelin-style'],
-      color: '#7700cc',
-      dark: '#4a007f'
+      num:'03', title:'Captation<br><em>Publique</em>', tag:'Moyen terme', year:'Horizon 2027',
+      desc:'SERVE engage une action institutionnelle structurée à Bruxelles et Paris pour capter les subventions publiques ESG disponibles, accélérer la reconnaissance officielle du label et positionner Babolat comme acteur de référence de la transition sportive.',
+      items:[
+        {title:'Lobbying Bruxelles',body:'Dossiers déposés auprès des instances européennes pour obtenir des financements sportifs durables dans le cadre du Green Deal.'},
+        {title:'Lobbying Paris',body:'Action ciblée auprès des ministères du Sport et de l\'Environnement pour reconnaissance légale du label SERVE.'},
+        {title:'Subventions sécurisées',body:'Flux réguliers de financements publics intégrés au modèle, réduisant la dépendance aux royalties privées.'},
+        {title:'Réseau d\'influence',body:'SERVE intègre les coalitions ESG sport à fort pouvoir décisionnel au niveau européen et national.'},
+      ]
     },
     {
-      id: 'label',
-      label: 'Label SERVE',
-      short: 'Produit certifié',
-      eye: '04 — Label SERVE',
-      title: 'Un label\nqui engage\nvraiment.',
-      titleHtml: 'Un label<br>qui <em>engage</em><br>vraiment.',
-      body: 'Apposé sur les produits des entreprises partenaires, le Label SERVE certifie le respect du cahier des charges ESG. Pour les marques : un ROI réputationnel mesurable. Pour les consommateurs : une garantie concrète.',
-      tags: ['ESG', 'B2B', 'ROI Marque', 'Consommateur'],
-      color: '#009955',
-      dark: '#005c33'
-    },
-    {
-      id: 'lobbying',
-      label: 'Lobbying ESG',
-      short: 'Institutionnel',
-      eye: '05 — Lobbying ESG',
-      title: 'Orienter\nles lois\ndu sport.',
-      titleHtml: 'Orienter<br>les lois<br><em>du sport.</em>',
-      body: 'Action institutionnelle ciblée à Paris et Bruxelles : captage de subventions publiques à court terme, et à long terme, lobbying pour rendre l\'investissement ESG obligatoire dans toutes les entreprises sportives.',
-      tags: ['Paris', 'Bruxelles', 'Subventions', 'Réglementation'],
-      color: '#cc4400',
-      dark: '#7a2900'
-    },
-    {
-      id: 'fonds',
-      label: 'Fonds SERVE',
-      short: 'Financement',
-      eye: '06 — Fonds SERVE',
-      title: 'Autonomie\nfinancière\npérenne.',
-      titleHtml: 'Autonomie<br><em>financière</em><br>pérenne.',
-      body: 'Un modèle hybride : Babolat finance l\'amorçage, puis les royalties (1% CA produit), les subventions UE captées par lobbying et les éco-participations prennent le relais — vers une indépendance financière totale.',
-      tags: ['Royalties 1%', 'Subventions', 'Dons', 'Babolat'],
-      color: '#997700',
-      dark: '#5c4700'
+      num:'04', title:'Régulation<br><em>ESG 2050</em>', tag:'Long terme', year:'Horizon 2050',
+      desc:'Aboutissement de la stratégie : rendre l\'investissement ESG obligatoire pour toutes les entreprises du secteur sportif en Europe. SERVE devient le standard de conformité de référence, aligné sur l\'objectif zéro émission de l\'Union Européenne à l\'horizon 2050.',
+      items:[
+        {title:'ESG obligatoire',body:'Lobbying institutionnel pour inscrire dans la loi l\'obligation d\'investissement ESG pour les entreprises sportives.'},
+        {title:'Label SERVE = conformité légale',body:'Le label SERVE est reconnu comme preuve de conformité ESG par les régulateurs européens — valeur juridique et financière.'},
+        {title:'Zéro émission sport',body:'Les infrastructures sportives certifiées SERVE atteignent la neutralité carbone, alignées sur les directives UE 2050.'},
+        {title:'Modèle exporté',body:'Le standard SERVE est adopté hors d\'Europe — Amérique du Nord, Asie-Pacifique. Babolat, architecte du sport mondial durable.'},
+      ]
     }
   ];
 
+  const cols = ['rdm1','rdm2','rdm3','rdm4'].map(id => document.getElementById(id));
+  const cards = ['rdmC1','rdmC2','rdmC3','rdmC4'].map(id => document.getElementById(id));
+  const fill = document.getElementById('rdmFill');
+  const detail = document.getElementById('rdmDetail');
+  const PCTS = ['0%','33%','66%','100%'];
+  let active = 0;
+
+  function updateDetail(i, animate){
+    const p = PHASES[i];
+    if(!detail) return;
+    if(animate){ detail.classList.remove('visible'); }
+    setTimeout(() => {
+      document.getElementById('rdmDetailNum').textContent = p.num;
+      document.getElementById('rdmDetailTitle').innerHTML = p.title;
+      document.getElementById('rdmDetailTag').textContent = p.tag;
+      document.getElementById('rdmDetailDesc').textContent = p.desc;
+      document.getElementById('rdmDetailYear').textContent = p.year;
+      const el = document.getElementById('rdmDetailItems');
+      el.innerHTML = p.items.map(it =>
+        '<div class="rdm-detail-item"><div class="rdm-detail-item-dot"></div><div class="rdm-detail-item-text"><strong>'+it.title+'</strong> — '+it.body+'</div></div>'
+      ).join('');
+      detail.classList.add('visible');
+    }, animate ? 180 : 0);
+  }
+
+  function setActive(i){
+    active = i;
+    cols.forEach((c,j) => { if(!c) return; c.classList.toggle('rdm-done',j<i); c.classList.toggle('rdm-active',j===i); });
+    if(fill) fill.style.width = PCTS[i];
+    updateDetail(i, true);
+  }
+
+  cols.forEach((col,i) => { if(!col) return; col.addEventListener('click', () => setActive(i)); });
+
+  const rdmObs = new IntersectionObserver(entries => {
+    if(!entries[0].isIntersecting) return;
+    cards.forEach((c,i) => {
+      if(!c) return;
+      const isDown = c.dataset.dir === 'down';
+      c.style.opacity = '0';
+      c.style.transform = isDown ? 'translateY(-16px)' : 'translateY(16px)';
+      setTimeout(() => { c.style.opacity='1'; c.style.transform='translateY(0)'; }, 80+i*140);
+    });
+    setTimeout(() => { if(fill) fill.style.transition='width 1.6s cubic-bezier(.4,0,.2,1)'; setActive(0); updateDetail(0,false); }, 300);
+    rdmObs.disconnect();
+  },{threshold:0.2});
+
+  const tl = document.getElementById('rdmTimeline');
+  if(tl) rdmObs.observe(tl);
+  cards.forEach(c => { if(c){ c.style.opacity='0'; c.style.transition='opacity .55s ease,transform .55s ease,border-color .25s,box-shadow .25s'; }});
+  setActive(0); updateDetail(0,false);
+})();
+
+/* WHEEL 360 ENGINE */
+(function(){
+  const SEGS = [
+    { label:'SERVE People', short:'Inclusion', eye:'01 — SERVE People',
+      titleHtml:'Le sport,<br><em>accessible</em><br>à tous.',
+      body:'Jeunes talents, publics défavorisés, personnes en situation de handicap. SERVE People garantit l\'accès à des revenus décents, un tutorat structuré et une plateforme digitale de coaching — le tout audité par une commission indépendante.',
+      tags:['Inclusion','Tutorat','Revenus décents','Commission indép.'], color:'#1a1aff', dark:'#0d0d99' },
+    { label:'Hub Digital', short:'Plateforme', eye:'02 — Hub Digital',
+      titleHtml:'Le coaching<br><em>pro,</em><br>démocratisé.',
+      body:'Une plateforme d\'apprentissage technique à large échelle. Formations certifiantes, conseils de professionnels, accès gratuit et illimité — pour briser les barrières financières d\'accès au sport de haut niveau.',
+      tags:['Formation','Gratuit','Digital','Certifiant'], color:'#0066cc', dark:'#003d80' },
+    { label:'SERVE Stars', short:'Certification clubs', eye:'03 — SERVE Stars',
+      titleHtml:'L\'étoile<br>qui fait la<br><em>différence.</em>',
+      body:'Système d\'audit institutionnel de type Guide Michelin — 1 à 3 étoiles — évaluant la gouvernance éthique et la maturité écologique des clubs. Un signal de confiance public, rigoureux et indépendant.',
+      tags:['1-3 étoiles','Audit','Gouvernance','Michelin-style'], color:'#7700cc', dark:'#4a007f' },
+    { label:'Label SERVE', short:'Produit certifié', eye:'04 — Label SERVE',
+      titleHtml:'Un label<br>qui <em>engage</em><br>vraiment.',
+      body:'Apposé sur les produits des entreprises partenaires, le Label SERVE certifie le respect du cahier des charges ESG. Pour les marques : un ROI réputationnel mesurable. Pour les consommateurs : une garantie concrète.',
+      tags:['ESG','B2B','ROI Marque','Consommateur'], color:'#009955', dark:'#005c33' },
+    { label:'Lobbying ESG', short:'Institutionnel', eye:'05 — Lobbying ESG',
+      titleHtml:'Orienter<br>les lois<br><em>du sport.</em>',
+      body:'Action institutionnelle ciblée à Paris et Bruxelles : captage de subventions publiques à court terme, et à long terme lobbying pour rendre l\'investissement ESG obligatoire dans toutes les entreprises sportives.',
+      tags:['Paris','Bruxelles','Subventions','Réglementation'], color:'#cc4400', dark:'#7a2900' },
+    { label:'Fonds SERVE', short:'Financement', eye:'06 — Fonds SERVE',
+      titleHtml:'Autonomie<br><em>financière</em><br>pérenne.',
+      body:'Un modèle hybride : Babolat finance l\'amorçage, puis les royalties (1% CA produit), les subventions UE captées par lobbying et les éco-participations prennent le relais — vers une indépendance financière totale.',
+      tags:['Royalties 1%','Subventions','Dons','Babolat'], color:'#997700', dark:'#5c4700' }
+  ];
+
   const cvs = document.getElementById('wheelCanvas');
+  if(!cvs) return;
   const ctx = cvs.getContext('2d');
-  const N = SEGS.length;
-  const TWO_PI = Math.PI * 2;
-  const SLICE = TWO_PI / N;
+  const N = 6, TWO_PI = Math.PI * 2, SLICE = TWO_PI / N;
+  let W, CX, CY, R_OUT, R_IN, R_RING;
+  let hovered = -1, active = -1, spinAngle = 0, spinning = true, animFrame;
 
-  let W, CX, CY, R_OUT, R_IN, R_LABEL, R_RING;
-  let hovered = -1;
-  let active = -1;
-  let rotation = 0;
-  let targetRotation = 0;
-  let animFrame;
-  let spinAngle = 0;
-  let spinning = true;
-  const SPIN_SPEED = 0.002;
-
-  function resize() {
+  function resize(){
     const size = cvs.parentElement.clientWidth;
-    cvs.width = size * window.devicePixelRatio;
-    cvs.height = size * window.devicePixelRatio;
+    cvs.width = size * devicePixelRatio;
+    cvs.height = size * devicePixelRatio;
     cvs.style.width = size + 'px';
     cvs.style.height = size + 'px';
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    W = size;
-    CX = W / 2; CY = W / 2;
-    R_OUT = W * 0.46;
-    R_IN  = W * 0.20;
-    R_RING = W * 0.48;
-    R_LABEL = (R_OUT + R_IN) / 2;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    W = size; CX = W/2; CY = W/2;
+    R_OUT = W * 0.46; R_IN = W * 0.20; R_RING = W * 0.48;
   }
 
-  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
-
-  function drawWheel(rot) {
-    ctx.clearRect(0, 0, W, W);
-
-    ctx.save();
-    ctx.translate(CX, CY);
-
-    for (let i = 0; i < N; i++) {
-      const s = SEGS[i];
-      const startA = rot + i * SLICE - Math.PI / 2;
-      const endA   = startA + SLICE;
-      const mid    = startA + SLICE / 2;
-      const isH = hovered === i;
-      const isA = active === i;
-      const rOut = isH || isA ? R_OUT * 1.04 : R_OUT;
-
+  function draw(rot){
+    ctx.clearRect(0,0,W,W);
+    ctx.save(); ctx.translate(CX,CY);
+    for(let i=0;i<N;i++){
+      const s=SEGS[i], isH=hovered===i, isA=active===i;
+      const startA=rot+i*SLICE-Math.PI/2, endA=startA+SLICE, mid=startA+SLICE/2;
+      const rOut=isH||isA ? R_OUT*1.04 : R_OUT;
       ctx.beginPath();
-      ctx.moveTo(Math.cos(startA) * R_IN, Math.sin(startA) * R_IN);
-      ctx.arc(0, 0, rOut, startA, endA);
-      ctx.arc(0, 0, R_IN, endA, startA, true);
+      ctx.moveTo(Math.cos(startA)*R_IN, Math.sin(startA)*R_IN);
+      ctx.arc(0,0,rOut,startA,endA);
+      ctx.arc(0,0,R_IN,endA,startA,true);
       ctx.closePath();
-
-      const fillColor = isA ? s.color : isH ? s.dark : '#161616';
-      ctx.fillStyle = fillColor;
+      ctx.fillStyle = isA ? s.color : isH ? s.dark : '#161616';
       ctx.fill();
-
-      ctx.strokeStyle = '#0a0a0a';
-      ctx.lineWidth = isH || isA ? 2 : 1.5;
-      ctx.stroke();
-
-      const labelR = (rOut * 0.62 + R_IN * 0.38);
-      const lx = Math.cos(mid) * labelR;
-      const ly = Math.sin(mid) * labelR;
-
-      ctx.save();
-      ctx.translate(lx, ly);
-
-      const labelColor = isA ? '#fff' : isH ? '#eee' : '#444';
-      ctx.fillStyle = labelColor;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      ctx.font = `500 ${W * 0.028}px Inter, system-ui, sans-serif`;
-      ctx.fillText(s.label, 0, -W * 0.016);
-
-      ctx.font = `300 ${W * 0.022}px Inter, system-ui, sans-serif`;
-      ctx.fillStyle = isA ? 'rgba(255,255,255,0.6)' : isH ? 'rgba(255,255,255,0.45)' : '#333';
-      ctx.fillText(s.short, 0, W * 0.018);
+      ctx.strokeStyle='#0a0a0a'; ctx.lineWidth=isH||isA?2:1.5; ctx.stroke();
+      const lr=(rOut*0.62+R_IN*0.38), lx=Math.cos(mid)*lr, ly=Math.sin(mid)*lr;
+      ctx.save(); ctx.translate(lx,ly);
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font=`500 ${W*.028}px Inter,system-ui,sans-serif`;
+      ctx.fillStyle=isA?'#fff':isH?'#eee':'#444';
+      ctx.fillText(s.label,0,-W*.016);
+      ctx.font=`300 ${W*.022}px Inter,system-ui,sans-serif`;
+      ctx.fillStyle=isA?'rgba(255,255,255,.6)':isH?'rgba(255,255,255,.45)':'#333';
+      ctx.fillText(s.short,0,W*.018);
       ctx.restore();
-
-      if (isA) {
-        const dotR = R_OUT * 1.06;
-        const dx = Math.cos(mid) * dotR;
-        const dy = Math.sin(mid) * dotR;
-        ctx.beginPath();
-        ctx.arc(dx, dy, 3, 0, TWO_PI);
-        ctx.fillStyle = s.color;
-        ctx.fill();
+      if(isA){
+        const dr=R_OUT*1.06;
+        ctx.beginPath(); ctx.arc(Math.cos(mid)*dr,Math.sin(mid)*dr,3,0,TWO_PI);
+        ctx.fillStyle=s.color; ctx.fill();
       }
     }
-
-    ctx.beginPath();
-    ctx.arc(0, 0, R_IN, 0, TWO_PI);
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fill();
-    ctx.strokeStyle = '#1e1e1e';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.font = `400 ${W * 0.055}px 'DM Serif Display', Georgia, serif`;
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('SERVE', 0, -W * 0.025);
-
-    ctx.font = `300 ${W * 0.028}px Inter, system-ui, sans-serif`;
-    ctx.fillStyle = '#444';
-    ctx.fillText('360°', 0, W * 0.028);
-
+    ctx.beginPath(); ctx.arc(0,0,R_IN,0,TWO_PI);
+    ctx.fillStyle='#0a0a0a'; ctx.fill();
+    ctx.strokeStyle='#1e1e1e'; ctx.lineWidth=1; ctx.stroke();
+    ctx.font=`400 ${W*.055}px 'DM Serif Display',Georgia,serif`;
+    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('SERVE',0,-W*.025);
+    ctx.font=`300 ${W*.028}px Inter,system-ui,sans-serif`;
+    ctx.fillStyle='#444'; ctx.fillText('360°',0,W*.028);
     ctx.restore();
-
-    ctx.beginPath();
-    ctx.arc(CX, CY, R_RING, 0, TWO_PI);
-    ctx.strokeStyle = '#1a1a1a';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    const tickN = 48;
-    for (let t = 0; t < tickN; t++) {
-      const a = (t / tickN) * TWO_PI + rot;
-      const r1 = R_RING + 4;
-      const r2 = R_RING + (t % 8 === 0 ? 12 : 7);
+    ctx.beginPath(); ctx.arc(CX,CY,R_RING,0,TWO_PI);
+    ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=1; ctx.stroke();
+    for(let t=0;t<48;t++){
+      const a=(t/48)*TWO_PI+rot, r1=R_RING+4, r2=R_RING+(t%8===0?12:7);
       ctx.beginPath();
-      ctx.moveTo(CX + Math.cos(a) * r1, CY + Math.sin(a) * r1);
-      ctx.lineTo(CX + Math.cos(a) * r2, CY + Math.sin(a) * r2);
-      ctx.strokeStyle = t % 8 === 0 ? '#333' : '#1e1e1e';
-      ctx.lineWidth = t % 8 === 0 ? 1 : 0.5;
-      ctx.stroke();
+      ctx.moveTo(CX+Math.cos(a)*r1,CY+Math.sin(a)*r1);
+      ctx.lineTo(CX+Math.cos(a)*r2,CY+Math.sin(a)*r2);
+      ctx.strokeStyle=t%8===0?'#333':'#1e1e1e';
+      ctx.lineWidth=t%8===0?1:0.5; ctx.stroke();
     }
   }
 
-  function loop() {
-    if (spinning && active === -1 && hovered === -1) {
-      spinAngle += SPIN_SPEED;
-      drawWheel(spinAngle);
-      animFrame = requestAnimationFrame(loop);
-    } else {
-      spinning = false;
-      drawWheel(spinAngle);
-    }
+  function loop(){
+    if(spinning && active===-1 && hovered===-1){
+      spinAngle+=0.002; draw(spinAngle); animFrame=requestAnimationFrame(loop);
+    } else { spinning=false; draw(spinAngle); }
   }
 
-  function getSegAt(mx, my) {
-    const dx = mx - CX, dy = my - CY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < R_IN || dist > R_OUT * 1.08) return -1;
-    let a = Math.atan2(dy, dx) - spinAngle + Math.PI / 2;
-    a = ((a % TWO_PI) + TWO_PI) % TWO_PI;
-    return Math.floor(a / SLICE) % N;
+  function getSeg(mx,my){
+    const dx=mx-CX,dy=my-CY,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<R_IN||dist>R_OUT*1.08) return -1;
+    let a=Math.atan2(dy,dx)-spinAngle+Math.PI/2;
+    a=((a%TWO_PI)+TWO_PI)%TWO_PI;
+    return Math.floor(a/SLICE)%N;
   }
 
-  function setPanel(idx) {
-    const s = idx >= 0 ? SEGS[idx] : null;
-    const eye   = document.getElementById('wpEye');
-    const title = document.getElementById('wpTitle');
-    const body  = document.getElementById('wpBody');
-    const tags  = document.getElementById('wpTags');
-
-    if (!s) {
-      eye.textContent = 'Sélectionnez un segment';
-      eye.classList.remove('lit');
-      title.innerHTML = 'Six dimensions,<br><em>une mission.</em>';
-      body.textContent = 'SERVE by Babolat structure son action autour de six programmes complémentaires. Chaque segment représente un levier stratégique contribuant à l\'objectif zéro émission 2035.';
-      tags.innerHTML = '<span class="wheel-tag">ESG</span><span class="wheel-tag">Sport</span><span class="wheel-tag">Impact</span><span class="wheel-tag">2035</span>';
+  function setPanel(idx){
+    const s=idx>=0?SEGS[idx]:null;
+    const eye=document.getElementById('wpEye');
+    const title=document.getElementById('wpTitle');
+    const body=document.getElementById('wpBody');
+    const tags=document.getElementById('wpTags');
+    if(!eye||!title||!body||!tags) return;
+    if(!s){
+      eye.textContent='Sélectionnez un segment'; eye.classList.remove('lit');
+      title.innerHTML='Six dimensions,<br><em>une mission.</em>';
+      body.textContent='SERVE by Babolat structure son action autour de six programmes complémentaires. Chaque segment représente un levier stratégique contribuant à l\'objectif zéro émission 2050.';
+      tags.innerHTML='<span class="wheel-tag">ESG</span><span class="wheel-tag">Sport</span><span class="wheel-tag">Impact</span><span class="wheel-tag">2050</span>';
       return;
     }
-    eye.textContent = s.eye;
-    eye.classList.add('lit');
-    title.style.opacity = '0';
-    body.style.opacity = '0';
-    setTimeout(() => {
-      title.innerHTML = s.titleHtml;
-      body.textContent = s.body;
-      tags.innerHTML = s.tags.map(t => `<span class="wheel-tag lit">${t}</span>`).join('');
-      title.style.opacity = '1';
-      body.style.opacity = '1';
-    }, 140);
+    eye.textContent=s.eye; eye.classList.add('lit');
+    title.style.opacity='0'; body.style.opacity='0';
+    setTimeout(()=>{
+      title.innerHTML=s.titleHtml; body.textContent=s.body;
+      tags.innerHTML=s.tags.map(t=>`<span class="wheel-tag lit">${t}</span>`).join('');
+      title.style.opacity='1'; body.style.opacity='1';
+    },140);
   }
 
-  cvs.addEventListener('mousemove', e => {
-    const r = cvs.getBoundingClientRect();
-    const mx = (e.clientX - r.left);
-    const my = (e.clientY - r.top);
-    const prev = hovered;
-    hovered = getSegAt(mx, my);
-    cvs.style.cursor = hovered >= 0 ? 'pointer' : 'default';
-    if (hovered !== prev) {
-      spinning = false;
-      cancelAnimationFrame(animFrame);
-      drawWheel(spinAngle);
-    }
+  cvs.addEventListener('mousemove',e=>{
+    const r=cvs.getBoundingClientRect(), sx=cvs.width/(r.width*devicePixelRatio);
+    const mx=(e.clientX-r.left), my=(e.clientY-r.top);
+    const prev=hovered; hovered=getSeg(mx,my);
+    cvs.style.cursor=hovered>=0?'pointer':'default';
+    if(hovered!==prev){ spinning=false; cancelAnimationFrame(animFrame); draw(spinAngle); }
   });
-
-  cvs.addEventListener('mouseleave', () => {
-    hovered = -1;
-    if (active === -1) { spinning = true; loop(); }
-    else drawWheel(spinAngle);
-  });
-
-  cvs.addEventListener('click', e => {
-    const r = cvs.getBoundingClientRect();
-    const mx = e.clientX - r.left;
-    const my = e.clientY - r.top;
-    const s = getSegAt(mx, my);
-    if (s < 0) return;
-    spinning = false;
-    cancelAnimationFrame(animFrame);
-    active = active === s ? -1 : s;
-    if (active === -1) { spinning = true; loop(); }
-    else drawWheel(spinAngle);
+  cvs.addEventListener('mouseleave',()=>{ hovered=-1; if(active===-1){spinning=true;loop();}else draw(spinAngle); });
+  cvs.addEventListener('click',e=>{
+    const r=cvs.getBoundingClientRect();
+    const s=getSeg(e.clientX-r.left, e.clientY-r.top);
+    if(s<0) return;
+    spinning=false; cancelAnimationFrame(animFrame);
+    active=active===s?-1:s;
+    if(active===-1){spinning=true;loop();}else draw(spinAngle);
     setPanel(active);
   });
+  window.addEventListener('resize',()=>{ resize(); draw(spinAngle); });
 
-  window.addEventListener('resize', () => {
-    ctx.setTransform(1,0,0,1,0,0);
-    resize();
-    drawWheel(spinAngle);
-  });
-
-  resize();
-  loop();
+  resize(); loop();
 })();
 </script>
 </body>
