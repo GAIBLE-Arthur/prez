@@ -8,18 +8,17 @@
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap');
 
         :root {
-            --bg-color: #0b0f19;
-            --text-main: #ffffff;
-            --text-muted: #8a99ad;
+            /* Couleurs extraites du deck */
+            --s: #E1F5EE; --sm: #1D9E75; --sd: #085041;
+            --a: #FAEEDA; --am: #BA7517; --ad: #633806;
+            --b: #E6F1FB; --bm: #185FA5; --bd: #042C53;
+            --p: #EEEDFE; --pm: #534AB7; --pd: #26215C;
+            --c: #FAECE7; --cm: #993C1D; --cd: #4A1B0C;
             
-            /* Couleurs du deck */
-            --c-social: #1D9E75;
-            --c-env: #BA7517;
-            --c-resp: #185FA5;
-            --c-usage: #534AB7;
-            --c-exp: #993C1D;
-            
-            --circle-size: 450px;
+            --bg-color: #FAFAFA;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --radius: 160px; /* Rayon du cercle */
         }
 
         * {
@@ -36,262 +35,186 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            perspective: 1000px;
         }
 
-        .presentation-container {
+        .container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 80px;
+            gap: 60px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1000px;
             padding: 40px;
         }
 
-        /* --- LE CERCLE INTERACTIF --- */
-        .wheel-wrapper {
+        /* --- LE CERCLE --- */
+        .circle-wrapper {
             position: relative;
-            width: var(--circle-size);
-            height: var(--circle-size);
+            width: 400px;
+            height: 400px;
             flex-shrink: 0;
-        }
-
-        .main-wheel {
-            position: absolute;
-            width: 100%;
-            height: 100%;
             border-radius: 50%;
-            border: 2px dashed rgba(255, 255, 255, 0.1);
-            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            border: 1px dashed #d0d0d0;
         }
 
-        .center-hub {
+        .center-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 160px;
-            height: 160px;
-            background: #131a26;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05);
-            z-index: 10;
-            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
         }
 
-        .center-hub h1 {
+        .center-text h1 {
             font-family: 'Syne', sans-serif;
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 800;
-            letter-spacing: 1px;
+            line-height: 1;
+            color: var(--text-main);
         }
 
-        .center-hub span {
-            font-size: 11px;
+        .center-text span {
+            font-size: 12px;
             text-transform: uppercase;
+            letter-spacing: 0.1em;
             color: var(--text-muted);
-            letter-spacing: 2px;
-            margin-top: 4px;
+            font-weight: 500;
         }
 
-        .sector-node {
+        /* --- LES NODES --- */
+        .node {
             position: absolute;
             top: 50%;
             left: 50%;
             width: 70px;
             height: 70px;
-            margin-top: -35px;
-            margin-left: -35px;
             border-radius: 50%;
-            background: #1a2333;
-            border: 2px solid rgba(255,255,255,0.2);
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: 'Syne', sans-serif;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            user-select: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            /* Mathématiques CSS pour placer les points sur un cercle sans casser la rotation du texte */
+            transform: translate(-50%, -50%) rotate(var(--angle)) translate(var(--radius)) rotate(calc(var(--angle) * -1));
         }
 
-        /* Positionnement des nodes autour du cercle (360 / 5 = 72 deg) */
-        .node-0 { transform: rotate(0deg) translate(200px) rotate(0deg); color: var(--c-social); border-color: var(--c-social); }
-        .node-1 { transform: rotate(72deg) translate(200px) rotate(-72deg); color: var(--c-env); border-color: var(--c-env); }
-        .node-2 { transform: rotate(142deg) translate(200px) rotate(-142deg); color: var(--c-resp); border-color: var(--c-resp); }
-        .node-3 { transform: rotate(216deg) translate(200px) rotate(-216deg); color: var(--c-usage); border-color: var(--c-usage); }
-        .node-4 { transform: rotate(288deg) translate(200px) rotate(-288deg); color: var(--c-exp); border-color: var(--c-exp); }
-
-        .sector-node:hover, .sector-node.active {
-            background: #ffffff;
-            box-shadow: 0 0 25px currentColor;
-            transform: scale(1.15);
-        }
-        .sector-node.active {
-            background: currentColor;
-            color: #ffffff !important;
+        .node:hover {
+            transform: translate(-50%, -50%) rotate(var(--angle)) translate(var(--radius)) rotate(calc(var(--angle) * -1)) scale(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
 
-        /* --- ZONE DE PANNEAU D'INFORMATION --- */
+        /* Distribution des angles et attribution des couleurs */
+        .node[data-id="s"] { --angle: -90deg; background: var(--s); color: var(--sd); border: 2px solid var(--sm); }
+        .node[data-id="e1"] { --angle: -18deg; background: var(--a); color: var(--ad); border: 2px solid var(--am); }
+        .node[data-id="r"] { --angle: 54deg; background: var(--b); color: var(--bd); border: 2px solid var(--bm); }
+        .node[data-id="v"] { --angle: 126deg; background: var(--p); color: var(--pd); border: 2px solid var(--pm); }
+        .node[data-id="e2"] { --angle: 198deg; background: var(--c); color: var(--cd); border: 2px solid var(--cm); }
+
+        /* État actif des nodes */
+        .node.active[data-id="s"] { background: var(--sm); color: #fff; }
+        .node.active[data-id="e1"] { background: var(--am); color: #fff; }
+        .node.active[data-id="r"] { background: var(--bm); color: #fff; }
+        .node.active[data-id="v"] { background: var(--pm); color: #fff; }
+        .node.active[data-id="e2"] { background: var(--cm); color: #fff; }
+
+        /* --- PANNEAU D'INFORMATION --- */
         .info-panel {
             flex: 1;
-            max-width: 500px;
-            min-height: 300px;
+            min-height: 250px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        .info-content {
-            opacity: 0;
-            transform: translateY(20px);
+        .content {
             display: none;
-            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateX(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
 
-        .info-content.active {
+        .content.active {
             display: block;
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(0);
         }
 
-        .info-tag {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-        }
-
-        .info-title {
+        .content-title {
             font-family: 'Syne', sans-serif;
-            font-size: 42px;
+            font-size: 36px;
             font-weight: 800;
+            margin-bottom: 15px;
             line-height: 1.1;
-            margin-bottom: 16px;
         }
 
-        .info-desc {
+        .content-desc {
             font-size: 16px;
             line-height: 1.6;
             color: var(--text-muted);
         }
 
-        /* Variations de couleurs dynamiques pour le texte du panneau */
-        .panel-0 .info-title { color: var(--c-social); }
-        .panel-1 .info-title { color: var(--c-env); }
-        .panel-2 .info-title { color: var(--c-resp); }
-        .panel-3 .info-title { color: var(--c-usage); }
-        .panel-4 .info-title { color: var(--c-exp); }
+        /* Couleurs des titres dans le panneau */
+        #content-s .content-title { color: var(--sm); }
+        #content-e1 .content-title { color: var(--am); }
+        #content-r .content-title { color: var(--bm); }
+        #content-v .content-title { color: var(--pm); }
+        #content-e2 .content-title { color: var(--cm); }
 
-        @media (max-width: 900px) {
-            .presentation-container {
+        /* Responsive */
+        @media (max-width: 800px) {
+            .container {
                 flex-direction: column;
                 gap: 40px;
-                padding: 20px;
             }
-            .wheel-wrapper {
+            .circle-wrapper {
                 transform: scale(0.8);
             }
             .info-panel {
                 text-align: center;
-                min-height: auto;
+            }
+            .content.active {
+                transform: translateX(0);
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="presentation-container">
+    <div class="container">
         
-        <div class="wheel-wrapper">
-            <div class="center-hub">
+        <div class="circle-wrapper">
+            <div class="center-text">
                 <h1>SERVE</h1>
-                <span>Score 360°</span>
+                <span>360° Score</span>
             </div>
-            <div class="main-wheel" id="wheel">
-                <div class="sector-node node-0 active" data-index="0">S</div>
-                <div class="sector-node node-1" data-index="1">E</div>
-                <div class="sector-node node-2" data-index="2">R</div>
-                <div class="sector-node node-3" data-index="3">V</div>
-                <div class="sector-node node-4" data-index="4">E</div>
-            </div>
+            <div class="node active" data-id="s">S</div>
+            <div class="node" data-id="e1">E</div>
+            <div class="node" data-id="r">R</div>
+            <div class="node" data-id="v">V</div>
+            <div class="node" data-id="e2">E</div>
         </div>
 
-        <div class="info-panel" id="infoPanel">
+        <div class="info-panel">
             
-            <div class="info-content panel-0 active">
-                <div class="info-tag">Dimension 01</div>
-                <h2 class="info-title">Social</h2>
-                <p class="info-desc">Garantir l'accès au sport pour la jeunesse, investir les milieux défavorisés, intégrer les personnes handicapées et propulser les nouveaux talents de demain.</p>
+            <div class="content active" id="content-s">
+                <h2 class="content-title">Social</h2>
+                <p class="content-desc">Accessibilité, inclusion, santé, jeunesse. Garantir l'accès au sport pour tous et propulser les talents de demain.</p>
             </div>
 
-            <div class="info-content panel-1">
-                <div class="info-tag">Dimension 02</div>
-                <h2 class="info-title">Environnement</h2>
-                <p class="info-desc">Maximiser le cycle de vie du matériel, pousser l'indice de réparabilité au maximum et réduire drastiquement l'empreinte carbone globale.</p>
+            <div class="content" id="content-e1">
+                <h2 class="content-title">Environnement</h2>
+                <p class="content-desc">Durée de vie, réparabilité, empreinte carbone. Maximiser le cycle de vie du matériel et réduire l'impact écologique.</p>
             </div>
 
-            <div class="info-content panel-2">
-                <div class="info-tag">Dimension 03</div>
-                <h2 class="info-title">Responsabilité</h2>
-                <p class="info-desc">Imposer une transparence totale sur la chaîne de fournisseurs, assurer une traçabilité sans faille et certifier des modes de production éthiques.</p>
+            <div class="content" id="content-r">
+                <h2 class="content-title">Responsabilité</h2>
+                <p class="content-desc">Production, transparence fournisseurs, traçabilité. Imposer une éthique irréprochable sur toute la chaîne de valeur.</p>
             </div>
 
-            <div class="info-content panel-3">
-                <div class="info-tag">Dimension 04</div>
-                <h2 class="info-title">Valeur d'usage</h2>
-                <p class="info-desc">Privilégier l'utilité réelle du produit, sa durabilité face aux éléments et encourager l'économie du partage de l'équipement.</p>
-            </div>
-
-            <div class="info-content panel-4">
-                <div class="info-tag">Dimension 05</div>
-                <h2 class="info-title">Expérience</h2>
-                <p class="info-desc">Placer le plaisir du jeu, la progression de l'athlète, l'engagement communautaire et la culture de l'effort au centre de l'écosystème.</p>
-            </div>
-
-        </div>
-    </div>
-
-    <script>
-        const nodes = document.querySelectorAll('.sector-node');
-        const contents = document.querySelectorAll('.info-content');
-        const wheel = document.getElementById('wheel');
-
-        // Distribution angulaire d'origine pour ramener la node sélectionnée "en haut" (optionnel)
-        // Ici, on gère simplement la permutation des classes actives au clic
-        nodes.forEach(node => {
-            node.addEventListener('click', () => {
-                const index = node.getAttribute('data-index');
-
-                // Nettoyage des états actifs
-                nodes.forEach(n => n.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
-
-                // Activation de l'élément sélectionné
-                node.classList.add('active');
-                document.querySelector(`.panel-${index}`).classList.add('active');
-                
-                // Effet de rotation légère de la roue pour dynamiser le clic (Optionnel)
-                const targetRotation = - (index * 72);
-                wheel.style.transform = `rotate(${targetRotation}deg)`;
-                
-                // Contre-rotation des nodes internes pour garder les lettres droites
-                nodes.forEach(n => {
-                    const nIndex = n.getAttribute('data-index');
-                    const originalRotation = nIndex * 72;
-                    n.style.transform = `rotate(${originalRotation}deg) translate(200px) rotate(${-originalRotation - targetRotation}deg)`;
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+            <div class="content" id="content-v">
+                <h2 class="content-title">Valeur d'usage</h2>
+                <p class
