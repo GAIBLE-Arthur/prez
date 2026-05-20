@@ -1,220 +1,378 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SERVE 360° - Cercle Interactif</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SERVE 360° — Concept</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0e0d0b;
+    --paper: #f5f0e8;
+    --paper-dark: #ede7d5;
+    --rule: #d0c8b4;
+    --muted: #7a7060;
 
-        :root {
-            /* Couleurs extraites du deck */
-            --s: #E1F5EE; --sm: #1D9E75; --sd: #085041;
-            --a: #FAEEDA; --am: #BA7517; --ad: #633806;
-            --b: #E6F1FB; --bm: #185FA5; --bd: #042C53;
-            --p: #EEEDFE; --pm: #534AB7; --pd: #26215C;
-            --c: #FAECE7; --cm: #993C1D; --cd: #4A1B0C;
-            
-            --bg-color: #FAFAFA;
-            --text-main: #111111;
-            --text-muted: #666666;
-            --radius: 160px; /* Rayon du cercle */
-        }
+    /* Serve 360 Colors */
+    --s-color: #1D9E75;
+    --e1-color: #BA7517;
+    --r-color: #185FA5;
+    --v-color: #534AB7;
+    --e2-color: #993C1D;
+  }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    overflow-x: hidden;
+    cursor: none; /* Ton curseur custom */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-        .container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 60px;
-            width: 100%;
-            max-width: 1000px;
-            padding: 40px;
-        }
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--ink);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease, background 0.2s ease;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.18s ease, width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+    opacity: 0.5;
+  }
+  body:has(a:hover) .cursor, body:has(.node:hover) .cursor { width: 6px; height: 6px; background: var(--s-color); }
+  body:has(a:hover) .cursor-ring, body:has(.node:hover) .cursor-ring { width: 52px; height: 52px; opacity: 0.8; border-color: var(--s-color); }
 
-        /* --- LE CERCLE --- */
-        .circle-wrapper {
-            position: relative;
-            width: 400px;
-            height: 400px;
-            flex-shrink: 0;
-            border-radius: 50%;
-            border: 1px dashed #d0d0d0;
-        }
+  /* NAV (Style portfolio) */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.4rem 3rem;
+    background: rgba(245, 240, 232, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+  }
+  .nav-tag {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-        .center-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
+  /* MAIN LAYOUT */
+  .hero {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 80px;
+    min-height: 100vh;
+  }
 
-        .center-text h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: 32px;
-            font-weight: 800;
-            line-height: 1;
-            color: var(--text-main);
-        }
+  /* LEFT : ORBITAL CIRCLE */
+  .hero-left {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--rule);
+    background: var(--paper-dark);
+    overflow: hidden;
+  }
 
-        .center-text span {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
+  .orbit-wrapper {
+    position: relative;
+    width: 460px;
+    height: 460px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+  }
 
-        /* --- LES NODES --- */
-        .node {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Syne', sans-serif;
-            font-size: 24px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            /* Mathématiques CSS pour placer les points sur un cercle sans casser la rotation du texte */
-            transform: translate(-50%, -50%) rotate(var(--angle)) translate(var(--radius)) rotate(calc(var(--angle) * -1));
-        }
+  .orbit-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .orbit-center h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .orbit-center span {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
 
-        .node:hover {
-            transform: translate(-50%, -50%) rotate(var(--angle)) translate(var(--radius)) rotate(calc(var(--angle) * -1)) scale(1.1);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        }
+  .node {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 64px; height: 64px;
+    margin: -32px 0 0 -32px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--ink);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-        /* Distribution des angles et attribution des couleurs */
-        .node[data-id="s"] { --angle: -90deg; background: var(--s); color: var(--sd); border: 2px solid var(--sm); }
-        .node[data-id="e1"] { --angle: -18deg; background: var(--a); color: var(--ad); border: 2px solid var(--am); }
-        .node[data-id="r"] { --angle: 54deg; background: var(--b); color: var(--bd); border: 2px solid var(--bm); }
-        .node[data-id="v"] { --angle: 126deg; background: var(--p); color: var(--pd); border: 2px solid var(--pm); }
-        .node[data-id="e2"] { --angle: 198deg; background: var(--c); color: var(--cd); border: 2px solid var(--cm); }
+  /* Placement mathématique (rayon de 230px) */
+  .node[data-id="s"]  { transform: rotate(-90deg) translate(230px) rotate(90deg); }
+  .node[data-id="e1"] { transform: rotate(-18deg) translate(230px) rotate(18deg); }
+  .node[data-id="r"]  { transform: rotate(54deg) translate(230px) rotate(-54deg); }
+  .node[data-id="v"]  { transform: rotate(126deg) translate(230px) rotate(-126deg); }
+  .node[data-id="e2"] { transform: rotate(198deg) translate(230px) rotate(-198deg); }
 
-        /* État actif des nodes */
-        .node.active[data-id="s"] { background: var(--sm); color: #fff; }
-        .node.active[data-id="e1"] { background: var(--am); color: #fff; }
-        .node.active[data-id="r"] { background: var(--bm); color: #fff; }
-        .node.active[data-id="v"] { background: var(--pm); color: #fff; }
-        .node.active[data-id="e2"] { background: var(--cm); color: #fff; }
+  /* Hover & Active states */
+  .node:hover, .node.active {
+    transform: scale(1.15) !important;
+    border-color: var(--ink);
+    box-shadow: 0 10px 30px rgba(14, 13, 11, 0.1);
+  }
+  /* Pour garder les noeuds à leur place même scaleés */
+  .node:hover[data-id="s"], .node.active[data-id="s"]   { transform: rotate(-90deg) translate(230px) rotate(90deg) scale(1.15) !important; background: var(--s-color); color: var(--paper); border-color: var(--s-color); }
+  .node:hover[data-id="e1"], .node.active[data-id="e1"] { transform: rotate(-18deg) translate(230px) rotate(18deg) scale(1.15) !important; background: var(--e1-color); color: var(--paper); border-color: var(--e1-color); }
+  .node:hover[data-id="r"], .node.active[data-id="r"]   { transform: rotate(54deg) translate(230px) rotate(-54deg) scale(1.15) !important; background: var(--r-color); color: var(--paper); border-color: var(--r-color); }
+  .node:hover[data-id="v"], .node.active[data-id="v"]   { transform: rotate(126deg) translate(230px) rotate(-126deg) scale(1.15) !important; background: var(--v-color); color: var(--paper); border-color: var(--v-color); }
+  .node:hover[data-id="e2"], .node.active[data-id="e2"] { transform: rotate(198deg) translate(230px) rotate(-198deg) scale(1.15) !important; background: var(--e2-color); color: var(--paper); border-color: var(--e2-color); }
 
-        /* --- PANNEAU D'INFORMATION --- */
-        .info-panel {
-            flex: 1;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+  /* RIGHT : CONTENT PANELS */
+  .hero-right {
+    display: flex;
+    align-items: center;
+    padding: 6rem 5rem;
+    position: relative;
+  }
 
-        .content {
-            display: none;
-            opacity: 0;
-            transform: translateX(15px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
+  .content-panel {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .content-panel.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-        .content.active {
-            display: block;
-            opacity: 1;
-            transform: translateX(0);
-        }
+  .panel-meta {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .panel-meta::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--muted); }
+  
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 5vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 2rem;
+    color: var(--ink);
+  }
 
-        .content-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 15px;
-            line-height: 1.1;
-        }
+  .panel-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--ink);
+    opacity: 0.85;
+    max-width: 45ch;
+    margin-bottom: 3rem;
+  }
 
-        .content-desc {
-            font-size: 16px;
-            line-height: 1.6;
-            color: var(--text-muted);
-        }
+  /* Data Rows (Style featured de ton portfolio) */
+  .panel-data {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    max-width: 400px;
+  }
+  .data-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.2rem 1.6rem;
+    background: var(--paper);
+    transition: background 0.2s;
+  }
+  .data-row:hover { background: var(--paper-dark); }
+  .data-key {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .data-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
 
-        /* Couleurs des titres dans le panneau */
-        #content-s .content-title { color: var(--sm); }
-        #content-e1 .content-title { color: var(--am); }
-        #content-r .content-title { color: var(--bm); }
-        #content-v .content-title { color: var(--pm); }
-        #content-e2 .content-title { color: var(--cm); }
+  /* Specific colors per panel */
+  #panel-s .panel-title { color: var(--s-color); }
+  #panel-e1 .panel-title { color: var(--e1-color); }
+  #panel-r .panel-title { color: var(--r-color); }
+  #panel-v .panel-title { color: var(--v-color); }
+  #panel-e2 .panel-title { color: var(--e2-color); }
 
-        /* Responsive */
-        @media (max-width: 800px) {
-            .container {
-                flex-direction: column;
-                gap: 40px;
-            }
-            .circle-wrapper {
-                transform: scale(0.8);
-            }
-            .info-panel {
-                text-align: center;
-            }
-            .content.active {
-                transform: translateX(0);
-            }
-        }
-    </style>
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-left { min-height: 60vh; border-right: none; border-bottom: 1px solid var(--rule); }
+    .orbit-wrapper { transform: scale(0.8); }
+    .hero-right { padding: 4rem 2rem; }
+  }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        
-        <div class="circle-wrapper">
-            <div class="center-text">
-                <h1>SERVE</h1>
-                <span>360° Score</span>
-            </div>
-            <div class="node active" data-id="s">S</div>
-            <div class="node" data-id="e1">E</div>
-            <div class="node" data-id="r">R</div>
-            <div class="node" data-id="v">V</div>
-            <div class="node" data-id="e2">E</div>
-        </div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 
-        <div class="info-panel">
-            
-            <div class="content active" id="content-s">
-                <h2 class="content-title">Social</h2>
-                <p class="content-desc">Accessibilité, inclusion, santé, jeunesse. Garantir l'accès au sport pour tous et propulser les talents de demain.</p>
-            </div>
+<nav>
+  <a href="#" class="nav-logo">BABOLAT.</a>
+  <span class="nav-tag">Serve 360° Framework</span>
+</nav>
 
-            <div class="content" id="content-e1">
-                <h2 class="content-title">Environnement</h2>
-                <p class="content-desc">Durée de vie, réparabilité, empreinte carbone. Maximiser le cycle de vie du matériel et réduire l'impact écologique.</p>
-            </div>
+<section class="hero">
+  <div class="hero-left">
+    <div class="orbit-wrapper">
+      <div class="orbit-center">
+        <h1>SERVE</h1>
+        <span>Score System</span>
+      </div>
+      <div class="node active" data-id="s">S</div>
+      <div class="node" data-id="e1">E</div>
+      <div class="node" data-id="r">R</div>
+      <div class="node" data-id="v">V</div>
+      <div class="node" data-id="e2">E</div>
+    </div>
+  </div>
 
-            <div class="content" id="content-r">
-                <h2 class="content-title">Responsabilité</h2>
-                <p class="content-desc">Production, transparence fournisseurs, traçabilité. Imposer une éthique irréprochable sur toute la chaîne de valeur.</p>
-            </div>
+  <div class="hero-right">
+    
+    <div class="content-panel active" id="panel-s">
+      <div class="panel-meta">Dimension 01</div>
+      <h2 class="panel-title">Social</h2>
+      <p class="panel-desc">Garantir l'accès au sport pour la jeunesse, investir les milieux défavorisés, intégrer les personnes handicapées et propulser les nouveaux talents de demain.</p>
+      <div class="panel-data">
+        <div class="data-row"><span class="data-key">Focus</span><span class="data-val">Accessibilité</span></div>
+        <div class="data-row"><span class="data-key">Cible</span><span class="data-val">Jeunesse & Inclusion</span></div>
+      </div>
+    </div>
 
-            <div class="content" id="content-v">
-                <h2 class="content-title">Valeur d'usage</h2>
-                <p class
+    <div class="content-panel" id="panel-e1">
+      <div class="panel-meta">Dimension 02</div>
+      <h2 class="panel-title">Environnement</h2>
+      <p class="panel-desc">Maximiser le cycle de vie du matériel, pousser l'indice de réparabilité au maximum et réduire drastiquement l'empreinte carbone globale du sport.</p>
+      <div class="panel-data">
+        <div class="data-row"><span class="data-key">Focus</span><span class="data-val">Cycle de vie</span></div>
+        <div class="data-row"><span class="data-key">Objectif</span><span class="data-val">Carbone neutre</span></div>
+      </div>
+    </div>
+
+    <div class="content-panel" id="panel-r">
+      <div class="panel-meta">Dimension 03</div>
+      <h2 class="panel-title">Responsabilité</h2>
+      <p class="panel-desc">Imposer une transparence totale sur la chaîne de fournisseurs, assurer une traçabilité sans faille et certifier des modes de production éthiques.</p>
+      <div class="panel-data">
+        <div class="data-row"><span class="data-key">Audit</span><span class="data-val">Supply Chain</span></div>
+        <div class="data-row"><span class="data-key">Standard</span><span class="data-val">Transparence OTC</span></div>
+      </div>
+    </div>
+
+    <div class="content-panel" id="panel-v">
+      <div class="panel-meta">Dimension 04</div>
+      <h2 class="panel-title">Valeur d'usage</h2>
+      <p class="panel-desc">Privilégier l'utilité réelle du produit, sa durabilité face aux éléments et encourager l'économie du partage de l'équipement sportif.</p>
+      <div class="panel-data">
+        <div class="data-row"><span class="data-key">Modèle</span><span class="data-val">Économie circulaire</span></div>
+        <div class="data-row"><span class="data-key">Métrique</span><span class="data-val">Durabilité réelle</span></div>
+      </div>
+    </div>
+
+    <div class="content-panel" id="panel-e2">
+      <div class="panel-meta">Dimension 05</div>
+      <h2 class="panel-title">Expérience</h2>
+      <p class="panel-desc">Placer le plaisir du jeu, la progression de l'athlète, l'engagement communautaire et la culture de l'effort au centre de l'écosystème.</p>
+      <div class="panel-data">
+        <div class="data-row"><span class="data-key">Moteur</span><span class="data-val">Culture de l'effort</span></div>
+        <div class="data-row"><span class="data-key">Finalité</span><span class="data-val">Communauté</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+// Le curseur que tu as codé
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  }, 60);
+});
+
+// Mécanique du cercle
+const nodes = document.querySelectorAll('.node');
+const panels = document.querySelectorAll('.content-panel');
+
+nodes.forEach(node => {
+  // Fonctionne au clic OU au survol pour plus de fluidité
+  ['mouseenter', 'click'].forEach(evt => {
+    node.addEventListener(evt, () => {
+      // Nettoyage
+      nodes.forEach(n => n.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+
+      // Activation
+      node.classList.add('active');
+      const targetId = 'panel-' + node.getAttribute('data-id');
+      document.getElementById(targetId).classList.add('active');
+    });
+  });
+});
+</script>
+</body>
+</html>
