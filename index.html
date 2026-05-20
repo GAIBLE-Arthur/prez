@@ -223,265 +223,20 @@ section { border-bottom: 1px solid var(--rule); }
 .fund-desc strong { display: block; font-weight: 500; color: var(--ink); font-size: .85rem; margin-bottom: .15rem; }
 .fund-pct { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; color: var(--ink); white-space: nowrap; }
 
-
-/* ── ROADMAP TIMELINE (branched) ── */
-.roadmap-timeline { position: relative; padding: 3rem 0 4rem; }
-.rdm-outer {
-  position: relative;
-  max-width: 1120px; margin: 0 auto;
-  padding: 0 3rem;
+/* ── ROADMAP ── */
+.roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.phase { background: var(--white); padding: 2rem 1.75rem; }
+.phase-n {
+  font-size: .65rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 1rem;
 }
-
-/* The central spine */
-.rdm-spine {
-  position: absolute;
-  left: calc(3rem + 12.5%);
-  right: calc(3rem + 12.5%);
-  top: 196px;
-  height: 2px;
-  background: var(--rule);
-  z-index: 1;
-}
-.rdm-spine-fill {
-  height: 100%; width: 0%;
-  background: var(--accent);
-  transition: width 1.6s cubic-bezier(.4,0,.2,1);
-}
-
-.rdm-grid {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  position: relative; z-index: 2;
-}
-
-.rdm-col { display: flex; flex-direction: column; align-items: center; }
-
-/* Top slot — card above spine */
-.rdm-top { height: 148px; width: 100%; display: flex; align-items: flex-end; justify-content: center; padding: 0 .75rem; }
-/* Bottom slot — card below spine */
-.rdm-bot { height: 148px; width: 100%; display: flex; align-items: flex-start; justify-content: center; padding: 0 .75rem; }
-
-/* Vertical branch lines */
-.rdm-branch {
-  width: 2px; background: var(--rule);
-  transition: background .4s ease;
-  flex-shrink: 0;
-}
-.rdm-branch-top { height: 44px; }
-.rdm-branch-bot { height: 44px; }
-.rdm-col.rdm-active .rdm-branch,
-.rdm-col.rdm-done .rdm-branch { background: var(--accent); }
-
-/* Node dot on the spine */
-.rdm-node {
-  width: 12px; height: 12px; border-radius: 50%;
-  border: 2px solid var(--rule);
-  background: var(--bg);
-  flex-shrink: 0; position: relative; z-index: 3;
-  transition: border-color .3s, background .3s, transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
-}
-.rdm-col.rdm-done .rdm-node { border-color: var(--accent); background: var(--accent); }
-.rdm-col.rdm-active .rdm-node {
-  border-color: var(--accent); background: var(--white);
-  transform: scale(1.7);
-  box-shadow: 0 0 0 5px rgba(26,26,255,.12), 0 0 0 10px rgba(26,26,255,.05);
-}
-.rdm-col:hover .rdm-node { transform: scale(1.5); border-color: var(--accent); }
-.rdm-col.rdm-active:hover .rdm-node { transform: scale(1.8); }
-
-/* Cards */
-.rdm-card {
-  background: var(--white);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 1.4rem 1.5rem;
-  width: 100%;
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity .5s ease,
-    transform .5s ease,
-    border-color .25s,
-    box-shadow .25s,
-    background .25s;
-  cursor: pointer;
-}
-.rdm-card.visible { opacity: 1; transform: translateY(0); }
-.rdm-card:hover {
-  border-color: rgba(26,26,255,.35);
-  box-shadow: 0 8px 32px rgba(26,26,255,.08);
-  transform: translateY(-3px) !important;
-}
-.rdm-col.rdm-active .rdm-card {
-  border-color: var(--accent);
-  background: #fafaff;
-}
-.rdm-col.rdm-active .rdm-card:hover { transform: translateY(-3px) !important; }
-.rdm-phase-tag {
-  display: block;
-  font-size: .6rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--ink3); margin-bottom: .55rem;
-  transition: color .25s;
-}
-.rdm-col.rdm-done .rdm-phase-tag,
-.rdm-col.rdm-active .rdm-phase-tag { color: var(--accent); }
-.rdm-phase-title { font-size: .88rem; font-weight: 500; color: var(--ink); margin-bottom: .4rem; line-height: 1.3; }
-.rdm-phase-body { font-size: .75rem; font-weight: 300; color: var(--ink2); line-height: 1.6; }
-
-/* Year marker on spine */
-.rdm-year {
-  font-size: .62rem; font-weight: 600; letter-spacing: .1em;
-  color: var(--ink3); margin-top: .4rem; text-align: center;
-  transition: color .3s;
-}
-.rdm-col.rdm-active .rdm-year,
-.rdm-col.rdm-done .rdm-year { color: var(--accent); }
-
-@media (max-width: 860px) {
-  .rdm-grid { grid-template-columns: 1fr 1fr; }
-  .rdm-spine { display: none; }
-  .rdm-outer { padding: 0 1.5rem; }
-}
-
-/* ── RICH SCROLL & HOVER EFFECTS ── */
-
-/* Nav active indicator */
-nav { transition: box-shadow .3s; }
-nav.scrolled { box-shadow: 0 1px 0 var(--rule), 0 4px 24px rgba(0,0,0,.04); }
-
-/* Hero parallax */
-.hero-left { will-change: transform; }
-
-/* Section stagger reveal — base */
-[data-sr] {
-  opacity: 0;
-  transition: opacity .65s ease, transform .65s ease;
-}
-[data-sr="up"] { transform: translateY(24px); }
-[data-sr="left"] { transform: translateX(-24px); }
-[data-sr="right"] { transform: translateX(24px); }
-[data-sr="scale"] { transform: scale(.96); }
-[data-sr].sr-visible { opacity: 1; transform: none; }
-
-/* Mission items lift */
-.mission-item {
-  transition: background .2s, padding-left .2s;
-}
-.mission-item:hover {
-  background: rgba(26,26,255,.02);
-  padding-left: .5rem;
-}
-
-/* Cert tiers tilt */
-.cert-tier {
-  transition: transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .25s;
-}
-.cert-tier:hover {
-  transform: translateY(-4px);
-  border-color: rgba(26,26,255,.25) !important;
-  box-shadow: 0 8px 28px rgba(26,26,255,.07);
-  z-index: 2;
-}
-
-/* Program cards */
-.program {
-  transition: background .2s;
-  position: relative; overflow: hidden;
-}
-.program::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: rgba(26,26,255,.025);
-  opacity: 0; transition: opacity .2s;
-  pointer-events: none;
-}
-.program:hover::after { opacity: 1; }
-
-/* Fund rows */
-.fund-row {
-  transition: background .2s, transform .2s;
-}
-.fund-row:hover {
-  background: rgba(26,26,255,.025);
-  transform: translateX(4px);
-}
-
-/* Cert badge */
-.cert-badge {
-  transition: background .2s;
-}
-.cert-badge:hover { background: rgba(26,26,255,.02); }
-
-/* Hero stats */
-.hero-stat {
-  transition: transform .25s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .2s;
-}
-.hero-stat:hover {
-  transform: translateX(4px);
-  border-color: rgba(26,26,255,.3);
-  box-shadow: 4px 0 0 0 var(--accent);
-}
-
-/* Progress bar on scroll */
-#progress-bar {
-  position: fixed; top: 0; left: 0; height: 2px;
-  background: var(--accent); z-index: 200;
-  width: 0%; transition: width .05s linear;
-  pointer-events: none;
-}
-
-/* Section number counter animation */
-.section-label { position: relative; }
-
-/* Magnetic links */
-.nav-cta, .btn-primary, .btn-white {
-  transition: opacity .15s, transform .2s cubic-bezier(.34,1.56,.64,1);
-}
-.nav-cta:hover, .btn-primary:hover, .btn-white:hover {
-  opacity: .85;
-  transform: scale(1.03);
-}
-
-/* Donut chart hover shimmer */
-.donut-wrap {
-  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
-}
-.donut-wrap:hover { transform: scale(1.03) rotate(-1deg); }
-
-/* CTA band */
-.cta-band { position: relative; overflow: hidden; }
-.cta-band::before {
-  content: '';
-  position: absolute; top: -50%; left: -20%;
-  width: 60%; height: 200%;
-  background: rgba(26,26,255,.04);
-  transform: skewX(-15deg) translateX(-100%);
-  transition: transform .6s ease;
-  pointer-events: none;
-}
-.cta-band:hover::before { transform: skewX(-15deg) translateX(280%); }
-
-/* Wheel section */
-.wheel-section { position: relative; overflow: hidden; }
-.wheel-section::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(26,26,255,.4), transparent);
-}
-.wheel-section::after {
-  content: '';
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(26,26,255,.4), transparent);
-}
-
-/* Scroll reveal stagger delays */
-[data-sr-delay="1"] { transition-delay: .08s; }
-[data-sr-delay="2"] { transition-delay: .16s; }
-[data-sr-delay="3"] { transition-delay: .24s; }
-[data-sr-delay="4"] { transition-delay: .32s; }
-
+.phase-title { font-size: .92rem; font-weight: 500; color: var(--ink); margin-bottom: .6rem; }
+.phase-body { font-size: .78rem; font-weight: 300; color: var(--ink2); line-height: 1.65; }
+.phase-bar { width: 24px; height: 2px; background: var(--accent); margin-bottom: 1.25rem; }
+.phase.active { background: var(--ink); }
+.phase.active .phase-n, .phase.active .phase-body { color: rgba(255,255,255,.45); }
+.phase.active .phase-title { color: #fff; }
+.phase.active .phase-bar { background: #fff; }
 
 /* ── CTA ── */
 .cta-band {
@@ -581,7 +336,6 @@ footer a:hover { color: var(--ink); }
 </style>
 </head>
 <body>
-<div id="progress-bar"></div>
 
 <nav>
   <span class="nav-brand">SERVE <em>by Babolat</em></span>
@@ -828,84 +582,33 @@ footer a:hover { color: var(--ink); }
 <section id="roadmap">
   <div class="container">
     <p class="section-label" data-n="05">Roadmap</p>
-    <h2 class="section-heading" data-sr="up">Quatre phases,<br>une <em>trajectoire</em>.</h2>
-    <p class="section-intro" data-sr="up" data-sr-delay="1">De la preuve de concept au lobbying réglementaire, chaque phase construit les fondations de la suivante. Cliquez sur une phase pour l'activer.</p>
-  </div>
-
-  <div class="roadmap-timeline" id="rdmTimeline">
-    <div class="rdm-outer">
-
-      <!-- Horizontal spine -->
-      <div class="rdm-spine">
-        <div class="rdm-spine-fill" id="rdmFill"></div>
+    <h2 class="section-heading" data-reveal>Quatre phases,<br>une <em>trajectoire</em>.</h2>
+    <p class="section-intro" data-reveal>De la preuve de concept au lobbying réglementaire, chaque phase construit les fondations de la suivante.</p>
+    <div style="height: 2.5rem;"></div>
+    <div class="roadmap" data-reveal>
+      <div class="phase active">
+        <div class="phase-bar"></div>
+        <p class="phase-n">Phase 01 — En cours</p>
+        <p class="phase-title">Preuve de Concept</p>
+        <p class="phase-body">Déploiement initial financé par Babolat. Mise en place des commissions indépendantes et premiers audits de clubs pilotes.</p>
       </div>
-
-      <div class="rdm-grid" id="rdmGrid">
-
-        <!-- Phase 1 — TOP -->
-        <div class="rdm-col rdm-active" id="rdm1" data-phase="0">
-          <div class="rdm-top">
-            <div class="rdm-card" id="rdmC1" data-dir="up">
-              <span class="rdm-phase-tag">Phase 01 — En cours</span>
-              <p class="rdm-phase-title">Preuve de Concept</p>
-              <p class="rdm-phase-body">Déploiement financé par Babolat. Mise en place des commissions indépendantes et premiers audits de clubs pilotes.</p>
-            </div>
-          </div>
-          <div class="rdm-branch rdm-branch-top"></div>
-          <div class="rdm-node" id="rdmN1"></div>
-          <div class="rdm-year">2024</div>
-          <div class="rdm-branch rdm-branch-bot" style="visibility:hidden;"></div>
-          <div class="rdm-bot" style="visibility:hidden;"></div>
-        </div>
-
-        <!-- Phase 2 — BOTTOM -->
-        <div class="rdm-col" id="rdm2" data-phase="1">
-          <div class="rdm-top" style="visibility:hidden;"></div>
-          <div class="rdm-branch rdm-branch-top" style="visibility:hidden;"></div>
-          <div class="rdm-node" id="rdmN2"></div>
-          <div class="rdm-year">2025</div>
-          <div class="rdm-branch rdm-branch-bot"></div>
-          <div class="rdm-bot">
-            <div class="rdm-card" id="rdmC2" data-dir="down">
-              <span class="rdm-phase-tag">Phase 02 — Court terme</span>
-              <p class="rdm-phase-title">Monétisation</p>
-              <p class="rdm-phase-body">Coachs certifiés payants. Royalties 1% CA des premières entreprises labellisées. Hub digital lancé.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phase 3 — TOP -->
-        <div class="rdm-col" id="rdm3" data-phase="2">
-          <div class="rdm-top">
-            <div class="rdm-card" id="rdmC3" data-dir="up">
-              <span class="rdm-phase-tag">Phase 03 — Moyen terme</span>
-              <p class="rdm-phase-title">Captation publique</p>
-              <p class="rdm-phase-body">Lobbying actif à Bruxelles & Paris. Sécurisation de flux de subventions publiques réguliers et pérennes.</p>
-            </div>
-          </div>
-          <div class="rdm-branch rdm-branch-top"></div>
-          <div class="rdm-node" id="rdmN3"></div>
-          <div class="rdm-year">2027</div>
-          <div class="rdm-branch rdm-branch-bot" style="visibility:hidden;"></div>
-          <div class="rdm-bot" style="visibility:hidden;"></div>
-        </div>
-
-        <!-- Phase 4 — BOTTOM -->
-        <div class="rdm-col" id="rdm4" data-phase="3">
-          <div class="rdm-top" style="visibility:hidden;"></div>
-          <div class="rdm-branch rdm-branch-top" style="visibility:hidden;"></div>
-          <div class="rdm-node" id="rdmN4"></div>
-          <div class="rdm-year">2035</div>
-          <div class="rdm-branch rdm-branch-bot"></div>
-          <div class="rdm-bot">
-            <div class="rdm-card" id="rdmC4" data-dir="down">
-              <span class="rdm-phase-tag">Phase 04 — Long terme</span>
-              <p class="rdm-phase-title">Régulation ESG</p>
-              <p class="rdm-phase-body">Lobbying institutionnel pour rendre l'investissement ESG obligatoire. Horizon zéro émission 2035.</p>
-            </div>
-          </div>
-        </div>
-
+      <div class="phase">
+        <div class="phase-bar"></div>
+        <p class="phase-n">Phase 02 — Court terme</p>
+        <p class="phase-title">Monétisation</p>
+        <p class="phase-body">Intégration payante des coachs certifiés. Royalties des premières entreprises labellisées (1% CA). Hub digital en ligne.</p>
+      </div>
+      <div class="phase">
+        <div class="phase-bar"></div>
+        <p class="phase-n">Phase 03 — Moyen terme</p>
+        <p class="phase-title">Captation publique</p>
+        <p class="phase-body">Lobbying actif à Bruxelles et Paris pour sécuriser des flux de subventions publiques réguliers et pérennes.</p>
+      </div>
+      <div class="phase">
+        <div class="phase-bar"></div>
+        <p class="phase-n">Phase 04 — Long terme</p>
+        <p class="phase-title">Régulation ESG</p>
+        <p class="phase-body">Lobbying institutionnel pour rendre l'investissement ESG obligatoire dans le sport. Horizon zéro émission 2035.</p>
       </div>
     </div>
   </div>
@@ -956,140 +659,305 @@ document.querySelectorAll('[data-reveal]').forEach(el => obs.observe(el));
 </script>
 
 <script>
-/* MASTER EFFECTS ENGINE */
 (function(){
-const bar = document.getElementById('progress-bar');
-function updateBar(){ const h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = (h > 0 ? (window.scrollY/h)*100 : 0) + '%'; }
-window.addEventListener('scroll', updateBar, {passive:true});
-const nav = document.querySelector('nav');
-window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 20); }, {passive:true});
-const srObs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('sr-visible'); srObs.unobserve(e.target); }});
-}, {threshold:0.12});
-document.querySelectorAll('[data-sr]').forEach(el => srObs.observe(el));
-const heroLeft = document.querySelector('.hero-left');
-if(heroLeft){
-  window.addEventListener('scroll', () => {
-    const y = window.scrollY;
-    if(y < window.innerHeight){ heroLeft.style.transform = `translateY(${y*0.1}px)`; heroLeft.style.opacity = String(Math.max(0, 1-(y/window.innerHeight)*0.55)); }
-  }, {passive:true});
-}
-document.querySelectorAll('.nav-cta, .btn-primary, .btn-white').forEach(btn => {
-  btn.addEventListener('mousemove', e => {
-    const r = btn.getBoundingClientRect();
-    btn.style.transform = `translate(${(e.clientX-r.left-r.width/2)*0.22}px,${(e.clientY-r.top-r.height/2)*0.22}px) scale(1.03)`;
-  });
-  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
-});
-const labelObs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='none'; labelObs.unobserve(e.target); }});
-}, {threshold:0.3});
-document.querySelectorAll('.section-label').forEach(el => {
-  el.style.opacity='0'; el.style.transform='translateY(8px)'; el.style.transition='opacity .5s ease, transform .5s ease';
-  labelObs.observe(el);
-});
-const missionObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(!e.isIntersecting) return;
-    e.target.querySelectorAll('.mission-item').forEach((item,i) => {
-      item.style.cssText += `opacity:0;transform:translateX(-14px);transition:opacity .45s ease ${i*.1}s,transform .45s ease ${i*.1}s,background .2s,padding-left .2s`;
-      requestAnimationFrame(() => { item.style.opacity='1'; item.style.transform='translateX(0)'; });
-    });
-    missionObs.unobserve(e.target);
-  });
-},{threshold:0.15});
-const mr = document.querySelector('.mission-right');
-if(mr) missionObs.observe(mr);
-const certObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(!e.isIntersecting) return;
-    e.target.querySelectorAll('.cert-tier,.cert-badge').forEach((el,i) => {
-      el.style.cssText += `opacity:0;transform:translateY(16px);transition:opacity .45s ease ${i*.12}s,transform .45s ease ${i*.12}s`;
-      requestAnimationFrame(() => { el.style.opacity='1'; el.style.transform='translateY(0)'; });
-    });
-    certObs.unobserve(e.target);
-  });
-},{threshold:0.15});
-document.querySelectorAll('.cert-matrix,.cert-trio').forEach(el => certObs.observe(el));
-const fundObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(!e.isIntersecting) return;
-    e.target.querySelectorAll('.fund-row').forEach((row,i) => {
-      row.style.cssText += `opacity:0;transform:translateX(16px);transition:opacity .4s ease ${i*.1}s,transform .4s ease ${i*.1}s,background .2s`;
-      requestAnimationFrame(() => { row.style.opacity='1'; row.style.transform='translateX(0)'; });
-    });
-    fundObs.unobserve(e.target);
-  });
-},{threshold:0.2});
-const fl = document.querySelector('.funding-legend');
-if(fl) fundObs.observe(fl);
-const progObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(!e.isIntersecting) return;
-    e.target.querySelectorAll('.program').forEach((p,i) => {
-      p.style.cssText += `opacity:0;transform:translateY(20px);transition:opacity .5s ease ${i*.15}s,transform .5s ease ${i*.15}s`;
-      requestAnimationFrame(() => { p.style.opacity='1'; p.style.transform='translateY(0)'; });
-    });
-    progObs.unobserve(e.target);
-  });
-},{threshold:0.15});
-const pg = document.querySelector('.programs-grid');
-if(pg) progObs.observe(pg);
-const statObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(!e.isIntersecting) return;
-    e.target.querySelectorAll('.hero-stat').forEach((s,i) => {
-      s.style.cssText += `opacity:0;transform:translateX(18px);transition:opacity .45s ease ${i*.1}s,transform .45s cubic-bezier(.34,1.2,.64,1) ${i*.1}s,border-color .2s,box-shadow .2s`;
-      requestAnimationFrame(() => { s.style.opacity='1'; s.style.transform='translateX(0)'; });
-    });
-    statObs.unobserve(e.target);
-  });
-},{threshold:0.2});
-const hs = document.querySelector('.hero-stat-stack');
-if(hs) statObs.observe(hs);
-})();
+  const SEGS = [
+    {
+      id: 'people',
+      label: 'SERVE People',
+      short: 'Inclusion',
+      eye: '01 — SERVE People',
+      title: 'Le sport,\naccessible\nà tous.',
+      titleHtml: 'Le sport,<br><em>accessible</em><br>à tous.',
+      body: 'Jeunes talents, publics défavorisés, personnes en situation de handicap. SERVE People garantit l\'accès à des revenus décents, un tutorat structuré et une plateforme digitale de coaching — le tout audité par une commission indépendante.',
+      tags: ['Inclusion', 'Tutorat', 'Revenus décents', 'Commission indép.'],
+      color: '#1a1aff',
+      dark: '#0d0d99'
+    },
+    {
+      id: 'digital',
+      label: 'Hub Digital',
+      short: 'Plateforme',
+      eye: '02 — Hub Digital',
+      title: 'Le coaching\npro,\ndémocratisé.',
+      titleHtml: 'Le coaching<br><em>pro,</em><br>démocratisé.',
+      body: 'Une plateforme d\'apprentissage technique à large échelle. Formations certifiantes, conseils de professionnels, accès gratuit et illimité — pour briser les barrières financières d\'accès au sport de haut niveau.',
+      tags: ['Formation', 'Gratuit', 'Digital', 'Certifiant'],
+      color: '#0066cc',
+      dark: '#003d80'
+    },
+    {
+      id: 'stars',
+      label: 'SERVE Stars',
+      short: 'Certification clubs',
+      eye: '03 — SERVE Stars',
+      title: 'L\'étoile\nqui fait la\ndifférence.',
+      titleHtml: 'L\'étoile<br>qui fait la<br><em>différence.</em>',
+      body: 'Système d\'audit institutionnel de type Guide Michelin — 1 à 3 étoiles — évaluant la gouvernance éthique et la maturité écologique des clubs. Un signal de confiance public, rigoureux et indépendant.',
+      tags: ['1-3 étoiles', 'Audit', 'Gouvernance', 'Michelin-style'],
+      color: '#7700cc',
+      dark: '#4a007f'
+    },
+    {
+      id: 'label',
+      label: 'Label SERVE',
+      short: 'Produit certifié',
+      eye: '04 — Label SERVE',
+      title: 'Un label\nqui engage\nvraiment.',
+      titleHtml: 'Un label<br>qui <em>engage</em><br>vraiment.',
+      body: 'Apposé sur les produits des entreprises partenaires, le Label SERVE certifie le respect du cahier des charges ESG. Pour les marques : un ROI réputationnel mesurable. Pour les consommateurs : une garantie concrète.',
+      tags: ['ESG', 'B2B', 'ROI Marque', 'Consommateur'],
+      color: '#009955',
+      dark: '#005c33'
+    },
+    {
+      id: 'lobbying',
+      label: 'Lobbying ESG',
+      short: 'Institutionnel',
+      eye: '05 — Lobbying ESG',
+      title: 'Orienter\nles lois\ndu sport.',
+      titleHtml: 'Orienter<br>les lois<br><em>du sport.</em>',
+      body: 'Action institutionnelle ciblée à Paris et Bruxelles : captage de subventions publiques à court terme, et à long terme, lobbying pour rendre l\'investissement ESG obligatoire dans toutes les entreprises sportives.',
+      tags: ['Paris', 'Bruxelles', 'Subventions', 'Réglementation'],
+      color: '#cc4400',
+      dark: '#7a2900'
+    },
+    {
+      id: 'fonds',
+      label: 'Fonds SERVE',
+      short: 'Financement',
+      eye: '06 — Fonds SERVE',
+      title: 'Autonomie\nfinancière\npérenne.',
+      titleHtml: 'Autonomie<br><em>financière</em><br>pérenne.',
+      body: 'Un modèle hybride : Babolat finance l\'amorçage, puis les royalties (1% CA produit), les subventions UE captées par lobbying et les éco-participations prennent le relais — vers une indépendance financière totale.',
+      tags: ['Royalties 1%', 'Subventions', 'Dons', 'Babolat'],
+      color: '#997700',
+      dark: '#5c4700'
+    }
+  ];
 
-/* ROADMAP ENGINE */
-(function(){
-  const cols = ['rdm1','rdm2','rdm3','rdm4'].map(id => document.getElementById(id));
-  const cards = ['rdmC1','rdmC2','rdmC3','rdmC4'].map(id => document.getElementById(id));
-  const fill = document.getElementById('rdmFill');
-  const PCTS = ['0%','33%','66%','100%'];
-  let active = 0;
-  function setActive(i){
-    active = i;
-    cols.forEach((c,j) => {
-      if(!c) return;
-      c.classList.toggle('rdm-done', j < i);
-      c.classList.toggle('rdm-active', j === i);
-    });
-    if(fill) fill.style.width = PCTS[i];
+  const cvs = document.getElementById('wheelCanvas');
+  const ctx = cvs.getContext('2d');
+  const N = SEGS.length;
+  const TWO_PI = Math.PI * 2;
+  const SLICE = TWO_PI / N;
+
+  let W, CX, CY, R_OUT, R_IN, R_LABEL, R_RING;
+  let hovered = -1;
+  let active = -1;
+  let rotation = 0;
+  let targetRotation = 0;
+  let animFrame;
+  let spinAngle = 0;
+  let spinning = true;
+  const SPIN_SPEED = 0.002;
+
+  function resize() {
+    const size = cvs.parentElement.clientWidth;
+    cvs.width = size * window.devicePixelRatio;
+    cvs.height = size * window.devicePixelRatio;
+    cvs.style.width = size + 'px';
+    cvs.style.height = size + 'px';
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    W = size;
+    CX = W / 2; CY = W / 2;
+    R_OUT = W * 0.46;
+    R_IN  = W * 0.20;
+    R_RING = W * 0.48;
+    R_LABEL = (R_OUT + R_IN) / 2;
   }
-  cols.forEach((col,i) => {
-    if(!col) return;
-    col.style.cursor = 'pointer';
-    col.addEventListener('click', () => setActive(i));
-  });
-  const rdmObs = new IntersectionObserver(entries => {
-    if(!entries[0].isIntersecting) return;
-    cards.forEach((c,i) => {
-      if(!c) return;
-      const isDown = c.dataset.dir === 'down';
-      c.style.opacity = '0';
-      c.style.transform = isDown ? 'translateY(-16px)' : 'translateY(16px)';
-      c.style.transition = `opacity .55s ease ${i*.14}s,transform .55s cubic-bezier(.34,1.2,.64,1) ${i*.14}s,border-color .25s,box-shadow .25s`;
-      setTimeout(() => { c.style.opacity='1'; c.style.transform='translateY(0)'; }, 80 + i*140);
-    });
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function drawWheel(rot) {
+    ctx.clearRect(0, 0, W, W);
+
+    ctx.save();
+    ctx.translate(CX, CY);
+
+    for (let i = 0; i < N; i++) {
+      const s = SEGS[i];
+      const startA = rot + i * SLICE - Math.PI / 2;
+      const endA   = startA + SLICE;
+      const mid    = startA + SLICE / 2;
+      const isH = hovered === i;
+      const isA = active === i;
+      const rOut = isH || isA ? R_OUT * 1.04 : R_OUT;
+
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(startA) * R_IN, Math.sin(startA) * R_IN);
+      ctx.arc(0, 0, rOut, startA, endA);
+      ctx.arc(0, 0, R_IN, endA, startA, true);
+      ctx.closePath();
+
+      const fillColor = isA ? s.color : isH ? s.dark : '#161616';
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+
+      ctx.strokeStyle = '#0a0a0a';
+      ctx.lineWidth = isH || isA ? 2 : 1.5;
+      ctx.stroke();
+
+      const labelR = (rOut * 0.62 + R_IN * 0.38);
+      const lx = Math.cos(mid) * labelR;
+      const ly = Math.sin(mid) * labelR;
+
+      ctx.save();
+      ctx.translate(lx, ly);
+
+      const labelColor = isA ? '#fff' : isH ? '#eee' : '#444';
+      ctx.fillStyle = labelColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      ctx.font = `500 ${W * 0.028}px Inter, system-ui, sans-serif`;
+      ctx.fillText(s.label, 0, -W * 0.016);
+
+      ctx.font = `300 ${W * 0.022}px Inter, system-ui, sans-serif`;
+      ctx.fillStyle = isA ? 'rgba(255,255,255,0.6)' : isH ? 'rgba(255,255,255,0.45)' : '#333';
+      ctx.fillText(s.short, 0, W * 0.018);
+      ctx.restore();
+
+      if (isA) {
+        const dotR = R_OUT * 1.06;
+        const dx = Math.cos(mid) * dotR;
+        const dy = Math.sin(mid) * dotR;
+        ctx.beginPath();
+        ctx.arc(dx, dy, 3, 0, TWO_PI);
+        ctx.fillStyle = s.color;
+        ctx.fill();
+      }
+    }
+
+    ctx.beginPath();
+    ctx.arc(0, 0, R_IN, 0, TWO_PI);
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fill();
+    ctx.strokeStyle = '#1e1e1e';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.font = `400 ${W * 0.055}px 'DM Serif Display', Georgia, serif`;
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('SERVE', 0, -W * 0.025);
+
+    ctx.font = `300 ${W * 0.028}px Inter, system-ui, sans-serif`;
+    ctx.fillStyle = '#444';
+    ctx.fillText('360°', 0, W * 0.028);
+
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, R_RING, 0, TWO_PI);
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    const tickN = 48;
+    for (let t = 0; t < tickN; t++) {
+      const a = (t / tickN) * TWO_PI + rot;
+      const r1 = R_RING + 4;
+      const r2 = R_RING + (t % 8 === 0 ? 12 : 7);
+      ctx.beginPath();
+      ctx.moveTo(CX + Math.cos(a) * r1, CY + Math.sin(a) * r1);
+      ctx.lineTo(CX + Math.cos(a) * r2, CY + Math.sin(a) * r2);
+      ctx.strokeStyle = t % 8 === 0 ? '#333' : '#1e1e1e';
+      ctx.lineWidth = t % 8 === 0 ? 1 : 0.5;
+      ctx.stroke();
+    }
+  }
+
+  function loop() {
+    if (spinning && active === -1 && hovered === -1) {
+      spinAngle += SPIN_SPEED;
+      drawWheel(spinAngle);
+      animFrame = requestAnimationFrame(loop);
+    } else {
+      spinning = false;
+      drawWheel(spinAngle);
+    }
+  }
+
+  function getSegAt(mx, my) {
+    const dx = mx - CX, dy = my - CY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < R_IN || dist > R_OUT * 1.08) return -1;
+    let a = Math.atan2(dy, dx) - spinAngle + Math.PI / 2;
+    a = ((a % TWO_PI) + TWO_PI) % TWO_PI;
+    return Math.floor(a / SLICE) % N;
+  }
+
+  function setPanel(idx) {
+    const s = idx >= 0 ? SEGS[idx] : null;
+    const eye   = document.getElementById('wpEye');
+    const title = document.getElementById('wpTitle');
+    const body  = document.getElementById('wpBody');
+    const tags  = document.getElementById('wpTags');
+
+    if (!s) {
+      eye.textContent = 'Sélectionnez un segment';
+      eye.classList.remove('lit');
+      title.innerHTML = 'Six dimensions,<br><em>une mission.</em>';
+      body.textContent = 'SERVE by Babolat structure son action autour de six programmes complémentaires. Chaque segment représente un levier stratégique contribuant à l\'objectif zéro émission 2035.';
+      tags.innerHTML = '<span class="wheel-tag">ESG</span><span class="wheel-tag">Sport</span><span class="wheel-tag">Impact</span><span class="wheel-tag">2035</span>';
+      return;
+    }
+    eye.textContent = s.eye;
+    eye.classList.add('lit');
+    title.style.opacity = '0';
+    body.style.opacity = '0';
     setTimeout(() => {
-      if(fill){ fill.style.transition='width 1.6s cubic-bezier(.4,0,.2,1)'; }
-      setActive(0);
-    }, 300);
-    rdmObs.disconnect();
-  },{threshold:0.2});
-  const tl = document.getElementById('rdmTimeline');
-  if(tl) rdmObs.observe(tl);
-  cards.forEach(c => { if(c){ c.style.opacity='0'; c.style.transition='opacity .55s ease,transform .55s ease,border-color .25s,box-shadow .25s'; }});
-  setActive(0);
+      title.innerHTML = s.titleHtml;
+      body.textContent = s.body;
+      tags.innerHTML = s.tags.map(t => `<span class="wheel-tag lit">${t}</span>`).join('');
+      title.style.opacity = '1';
+      body.style.opacity = '1';
+    }, 140);
+  }
+
+  cvs.addEventListener('mousemove', e => {
+    const r = cvs.getBoundingClientRect();
+    const mx = (e.clientX - r.left);
+    const my = (e.clientY - r.top);
+    const prev = hovered;
+    hovered = getSegAt(mx, my);
+    cvs.style.cursor = hovered >= 0 ? 'pointer' : 'default';
+    if (hovered !== prev) {
+      spinning = false;
+      cancelAnimationFrame(animFrame);
+      drawWheel(spinAngle);
+    }
+  });
+
+  cvs.addEventListener('mouseleave', () => {
+    hovered = -1;
+    if (active === -1) { spinning = true; loop(); }
+    else drawWheel(spinAngle);
+  });
+
+  cvs.addEventListener('click', e => {
+    const r = cvs.getBoundingClientRect();
+    const mx = e.clientX - r.left;
+    const my = e.clientY - r.top;
+    const s = getSegAt(mx, my);
+    if (s < 0) return;
+    spinning = false;
+    cancelAnimationFrame(animFrame);
+    active = active === s ? -1 : s;
+    if (active === -1) { spinning = true; loop(); }
+    else drawWheel(spinAngle);
+    setPanel(active);
+  });
+
+  window.addEventListener('resize', () => {
+    ctx.setTransform(1,0,0,1,0,0);
+    resize();
+    drawWheel(spinAngle);
+  });
+
+  resize();
+  loop();
 })();
 </script>
 </body>
